@@ -144,12 +144,26 @@ dotnet run
 The application includes Docker support. To build and run using Docker:
 
 ```bash
-# Build the image
-docker build -t cursor-mcp-monitor .
+# Make sure you're in the repository root directory
+cd /path/to/CursorMCPMonitor
 
-# Run the container
-docker run -it --rm cursor-mcp-monitor
+# Build the image (note the -f flag to specify Dockerfile location)
+docker build -t cursor-mcp-monitor -f src/CursorMCPMonitor/Dockerfile .
+
+# Run the container with volume mapping for logs
+# For Windows PowerShell:
+docker run -it --rm -v "$env:APPDATA\Cursor\logs:/app/logs" -e LogsRoot=/app/logs cursor-mcp-monitor
+
+# For Windows CMD:
+docker run -it --rm -v "%APPDATA%\Cursor\logs:/app/logs" -e LogsRoot=/app/logs cursor-mcp-monitor
+
+# For macOS/Linux:
+docker run -it --rm -v "$HOME/Library/Application Support/Cursor/logs:/app/logs" -e LogsRoot=/app/logs cursor-mcp-monitor
 ```
+
+> **Important**: 
+> - Always run the Docker build command from the repository root directory, not from the project directory. This ensures that all necessary files are included in the build context.
+> - When running the Docker container, you need to map your local Cursor logs directory into the container and set the `LogsRoot` environment variable to point to the mapped directory.
 
 ## Logging and Observability
 
