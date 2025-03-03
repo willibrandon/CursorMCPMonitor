@@ -68,12 +68,13 @@ public class LogMonitorService : ILogMonitorService
         {
             if (Directory.Exists(e.FullPath))
             {
+                _logger.LogDebug("New directory detected: {Directory}", e.FullPath);
                 HandleNewLogSubdirectory(e.FullPath, appConfig);
             }
         };
 
         rootWatcher.EnableRaisingEvents = true;
-        _logger.LogInformation("Root directory watcher enabled");
+        _logger.LogInformation("Root directory watcher enabled for {Directory}", rootLogDirectory);
     }
 
     /// <summary>
@@ -86,7 +87,10 @@ public class LogMonitorService : ILogMonitorService
         lock (_activeLogWatchers)
         {
             if (_activeLogWatchers.ContainsKey(subDirPath))
+            {
+                _logger.LogDebug("Subdirectory already being monitored: {SubDir}", subDirPath);
                 return;
+            }
         }
 
         var watcher = new FileSystemWatcher(subDirPath)
@@ -106,6 +110,7 @@ public class LogMonitorService : ILogMonitorService
         CheckForExistingCursorLog(subDirPath, appConfig);
         
         _logger.LogInformation("Monitoring new subdirectory: {SubDir}", subDirPath);
+        _consoleOutput.WriteSuccess("Subdirectory:", $"Monitoring {subDirPath}");
     }
 
     /// <summary>
@@ -114,7 +119,10 @@ public class LogMonitorService : ILogMonitorService
     private void OnSubdirectoryFileCreated(string rootSubDir, FileSystemEventArgs e, AppConfig appConfig)
     {
         if (!File.Exists(e.FullPath))
+        {
+            _logger.LogDebug("File creation event triggered but file does not exist: {FilePath}", e.FullPath);
             return;
+        }
 
         var relative = Path.GetRelativePath(rootSubDir, e.FullPath);
         // Use more flexible pattern matching based on appConfig.LogPattern
@@ -122,7 +130,12 @@ public class LogMonitorService : ILogMonitorService
             relative.Replace('\\', '/').EndsWith($"exthost/anysphere.cursor-always-local/{appConfig.LogPattern}",
             StringComparison.OrdinalIgnoreCase))
         {
+            _logger.LogInformation("Detected new Cursor MCP log file: {FilePath}", e.FullPath);
             StartTailer(e.FullPath, appConfig);
+        }
+        else
+        {
+            _logger.LogDebug("File created but does not match log pattern: {FilePath}", e.FullPath);
         }
     }
 
@@ -131,13 +144,17 @@ public class LogMonitorService : ILogMonitorService
     /// </summary>
     private void CheckForExistingCursorLog(string subDirPath, AppConfig appConfig)
     {
+        _logger.LogDebug("Checking for existing log files in {SubDir}", subDirPath);
+        
         // Check all window* subdirectories
         foreach (var windowDir in Directory.GetDirectories(subDirPath, "window*"))
         {
             var exthostPath = Path.Combine(windowDir, "exthost", "anysphere.cursor-always-local");
             var logFile = Path.Combine(exthostPath, appConfig.LogPattern);
+            
             if (File.Exists(logFile))
             {
+                _logger.LogInformation("Found existing log file: {LogFile}", logFile);
                 StartTailer(logFile, appConfig);
             }
         }
@@ -151,13 +168,18 @@ public class LogMonitorService : ILogMonitorService
         lock (_logTailers)
         {
             if (_logTailers.ContainsKey(fullFilePath))
+            {
+                _logger.LogDebug("Log file already being tailed: {LogFile}", fullFilePath);
                 return;
+            }
 
             var tailer = new LogTailer(fullFilePath, _logProcessor.ProcessLogLine, appConfig.PollIntervalMs);
             _logTailers[fullFilePath] = tailer;
         }
 
-        _logger.LogInformation("Now tailing: {LogFile}", fullFilePath);
+        _logger.LogInformation("Started tailing: {LogFile} with poll interval {PollInterval}ms", 
+            fullFilePath, appConfig.PollIntervalMs);
+        _consoleOutput.WriteSuccess("LogTailer:", $"Now tailing: {fullFilePath}");
     }
 
     /// <summary>
@@ -165,6 +187,8 @@ public class LogMonitorService : ILogMonitorService
     /// </summary>
     public void Dispose()
     {
+        _logger.LogInformation("Disposing LogMonitorService, stopping all watchers and tailers");
+        
         lock (_activeLogWatchers)
         {
             foreach (var watcher in _activeLogWatchers.Values)
@@ -183,5 +207,7 @@ public class LogMonitorService : ILogMonitorService
             }
             _logTailers.Clear();
         }
+        
+        _logger.LogInformation("All watchers and tailers stopped");
     }
 } 

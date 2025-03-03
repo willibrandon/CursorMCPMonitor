@@ -30,6 +30,9 @@ public class ConsoleOutputService : IConsoleOutputService
             Console.WriteLine(message);
             Console.ResetColor();
         }
+        
+        // Log with structured properties
+        _logger.LogInformation("{OutputType} {Prefix} {Message}", "Raw", prefix, message);
     }
 
     /// <summary>
@@ -46,7 +49,8 @@ public class ConsoleOutputService : IConsoleOutputService
             Console.ResetColor();
         }
         
-        _logger.LogInformation("{Message}", $"{prefix} {message}");
+        // Log with structured properties
+        _logger.LogInformation("{OutputType} {Prefix} {Message}", "Info", prefix, message);
     }
 
     /// <summary>
@@ -63,7 +67,8 @@ public class ConsoleOutputService : IConsoleOutputService
             Console.ResetColor();
         }
         
-        _logger.LogInformation("{Message}", $"{prefix} {message}");
+        // Log with structured properties
+        _logger.LogInformation("{OutputType} {Prefix} {Message}", "Success", prefix, message);
     }
 
     /// <summary>
@@ -80,7 +85,8 @@ public class ConsoleOutputService : IConsoleOutputService
             Console.ResetColor();
         }
         
-        _logger.LogWarning("{Message}", $"{prefix} {message}");
+        // Log with structured properties
+        _logger.LogWarning("{OutputType} {Prefix} {Message}", "Warning", prefix, message);
     }
 
     /// <summary>
@@ -97,7 +103,8 @@ public class ConsoleOutputService : IConsoleOutputService
             Console.ResetColor();
         }
         
-        _logger.LogError("{Message}", $"{prefix} {message}");
+        // Log with structured properties
+        _logger.LogError("{OutputType} {Prefix} {Message}", "Error", prefix, message);
     }
 
     /// <summary>
@@ -114,6 +121,7 @@ public class ConsoleOutputService : IConsoleOutputService
             Console.ResetColor();
         }
         
-        _logger.LogInformation("{Message}", $"{prefix} {message}");
+        // Log with structured properties
+        _logger.LogInformation("{OutputType} {Prefix} {Message}", "Highlight", prefix, message);
     }
 } 
