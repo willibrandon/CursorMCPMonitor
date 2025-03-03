@@ -118,7 +118,8 @@ public class Program
             return;
 
         var relative = Path.GetRelativePath(rootSubDir, e.FullPath);
-        if (relative.Replace('\\', '/').EndsWith("exthost/anysphere.cursor-always-local/Cursor MCP.log",
+        if (relative.Replace('\\', '/').Contains("/window") && 
+            relative.Replace('\\', '/').EndsWith("exthost/anysphere.cursor-always-local/Cursor MCP.log",
             StringComparison.OrdinalIgnoreCase))
         {
             StartTailer(e.FullPath);
@@ -127,11 +128,15 @@ public class Program
 
     private static void CheckForExistingCursorLog(string subDirPath)
     {
-        var exthostPath = Path.Combine(subDirPath, "exthost", "anysphere.cursor-always-local");
-        var logFile = Path.Combine(exthostPath, "Cursor MCP.log");
-        if (File.Exists(logFile))
+        // Check all window* subdirectories
+        foreach (var windowDir in Directory.GetDirectories(subDirPath, "window*"))
         {
-            StartTailer(logFile);
+            var exthostPath = Path.Combine(windowDir, "exthost", "anysphere.cursor-always-local");
+            var logFile = Path.Combine(exthostPath, "Cursor MCP.log");
+            if (File.Exists(logFile))
+            {
+                StartTailer(logFile);
+            }
         }
     }
 
