@@ -1,20 +1,34 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35818.85 d17.13
+VisualStudioVersion = 17.13.35818.85
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CursorMCPMonitor", "CursorMCPMonitor\CursorMCPMonitor.csproj", "{6FC651C8-B355-4CE1-9A34-36993EF9355E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CursorMCPMonitor", "src\CursorMCPMonitor\CursorMCPMonitor.csproj", "{6FC651C8-B355-4CE1-9A34-36993EF9355E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CursorMCPMonitor.Tests", "tests\CursorMCPMonitor.Tests\CursorMCPMonitor.Tests.csproj", "{93A0425A-44E4-4F85-855B-ADC16300F0A4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A4F3E313-3DC3-4BA7-9186-C064F4F2A3AA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B4F3E313-3DC3-4BA7-9186-C064F4F2A3BB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipelines", "pipelines", "{08946674-DC42-49B0-81B1-F6E5E0B950EA}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".config", ".config", "{C4F3E313-3DC3-4BA7-9186-C064F4F2A3CC}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		LICENSE.txt = LICENSE.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{D4F3E313-3DC3-4BA7-9186-C064F4F2A3DD}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\ci.yml = .github\workflows\ci.yml
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
 	EndProjectSection
 EndProject
 Global
@@ -34,6 +48,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6FC651C8-B355-4CE1-9A34-36993EF9355E} = {A4F3E313-3DC3-4BA7-9186-C064F4F2A3AA}
+		{93A0425A-44E4-4F85-855B-ADC16300F0A4} = {B4F3E313-3DC3-4BA7-9186-C064F4F2A3BB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {058D9E9E-B4E6-4CAB-9915-72B28A9B835A}
