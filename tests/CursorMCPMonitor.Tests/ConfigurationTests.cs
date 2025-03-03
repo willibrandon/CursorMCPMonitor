@@ -1,3 +1,4 @@
+using CursorMCPMonitor.Configuration;
 using Microsoft.Extensions.Configuration;
 
 namespace CursorMCPMonitor.Tests;
@@ -15,24 +16,14 @@ public class ConfigurationTests
     {
         // Arrange
         var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?> { ["LogsRoot"] = null })
+            .AddInMemoryCollection()
             .Build();
 
         // Act
-        var logsRoot = config.GetValue<string>("LogsRoot") ?? 
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "Cursor",
-                "logs"
-            );
+        var appConfig = AppConfig.Load(config);
 
         // Assert
-        var expected = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "Cursor",
-            "logs"
-        );
-        Assert.Equal(expected, logsRoot);
+        Assert.Equal(AppConfig.GetDefaultLogsDirectory(), appConfig.LogsRoot);
     }
 
     /// <summary>
@@ -42,24 +33,19 @@ public class ConfigurationTests
     public void Should_Use_Configured_Logs_Path()
     {
         // Arrange
-        var customPath = Path.Combine("custom", "path", "logs");
+        var customPath = Path.Combine(Path.GetTempPath(), "CustomLogs");
         var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
+            .AddInMemoryCollection(new[]
             {
-                ["LogsRoot"] = customPath
+                new KeyValuePair<string, string?>("LogsRoot", customPath)
             })
             .Build();
 
         // Act
-        var logsRoot = config.GetValue<string>("LogsRoot") ?? 
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "Cursor",
-                "logs"
-            );
+        var appConfig = AppConfig.Load(config);
 
         // Assert
-        Assert.Equal(customPath, logsRoot);
+        Assert.Equal(customPath, appConfig.LogsRoot);
     }
 
     /// <summary>
@@ -70,14 +56,14 @@ public class ConfigurationTests
     {
         // Arrange
         var config = new ConfigurationBuilder()
-            .AddInMemoryCollection([])
+            .AddInMemoryCollection()
             .Build();
 
         // Act
-        var pollInterval = config.GetValue<int>("PollIntervalMs", 1000);
+        var appConfig = AppConfig.Load(config);
 
         // Assert
-        Assert.Equal(1000, pollInterval);
+        Assert.Equal(1000, appConfig.PollIntervalMs); // Default value
     }
 
     /// <summary>
@@ -86,22 +72,85 @@ public class ConfigurationTests
     /// <param name="interval">The poll interval in milliseconds to test.</param>
     [Theory]
     [InlineData(500)]
+    [InlineData(1000)]
     [InlineData(2000)]
-    [InlineData(5000)]
     public void Should_Use_Configured_Poll_Interval(int interval)
     {
         // Arrange
         var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
+            .AddInMemoryCollection(new[]
             {
-                ["PollIntervalMs"] = interval.ToString()
+                new KeyValuePair<string, string?>("PollIntervalMs", interval.ToString())
             })
             .Build();
 
         // Act
-        var pollInterval = config.GetValue<int>("PollIntervalMs", 1000);
+        var appConfig = AppConfig.Load(config);
 
         // Assert
-        Assert.Equal(interval, pollInterval);
+        Assert.Equal(interval, appConfig.PollIntervalMs);
+    }
+
+    [Theory]
+    [InlineData("Debug")]
+    [InlineData("Information")]
+    [InlineData("Warning")]
+    [InlineData("Error")]
+    public void Should_Use_Configured_Verbosity(string verbosity)
+    {
+        // Arrange
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string?>("Verbosity", verbosity)
+            })
+            .Build();
+
+        // Act
+        var appConfig = AppConfig.Load(config);
+
+        // Assert
+        Assert.Equal(verbosity, appConfig.Verbosity);
+    }
+
+    [Theory]
+    [InlineData("error")]
+    [InlineData("warning")]
+    [InlineData("test")]
+    public void Should_Use_Configured_Filter(string filter)
+    {
+        // Arrange
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string?>("Filter", filter)
+            })
+            .Build();
+
+        // Act
+        var appConfig = AppConfig.Load(config);
+
+        // Assert
+        Assert.Equal(filter, appConfig.Filter);
+    }
+
+    [Theory]
+    [InlineData("Cursor MCP*.log")]
+    [InlineData("*.log")]
+    public void Should_Use_Configured_Log_Pattern(string pattern)
+    {
+        // Arrange
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string?>("LogPattern", pattern)
+            })
+            .Build();
+
+        // Act
+        var appConfig = AppConfig.Load(config);
+
+        // Assert
+        Assert.Equal(pattern, appConfig.LogPattern);
     }
 } 
