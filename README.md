@@ -2,6 +2,34 @@
 
 A .NET console application that monitors Model Context Protocol (MCP) interactions in the Cursor AI editor. This tool helps developers debug and analyze MCP server-client communications by monitoring log files in real-time.
 
+## Installation
+
+You can install the tool globally using the .NET CLI:
+
+```bash
+# Install from NuGet.org
+dotnet tool install --global CursorMCPMonitor
+
+# Or install from GitHub Packages
+dotnet nuget add source --name github "https://nuget.pkg.github.com/willibrandon/index.json"
+dotnet tool install --global CursorMCPMonitor --add-source github
+```
+
+After installation, you can run the tool from anywhere using:
+```bash
+cursor-mcp --help
+```
+
+To update to the latest version:
+```bash
+dotnet tool update --global CursorMCPMonitor
+```
+
+To uninstall:
+```bash
+dotnet tool uninstall --global CursorMCPMonitor
+```
+
 ## What is MCP?
 
 The Model Context Protocol (MCP) is an open protocol that standardizes how applications provide context to LLMs. It follows a client-server architecture where:
