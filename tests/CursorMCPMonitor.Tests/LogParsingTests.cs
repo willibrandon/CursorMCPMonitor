@@ -2,11 +2,10 @@ using System.Text.RegularExpressions;
 
 namespace CursorMCPMonitor.Tests;
 
-public class LogParsingTests
+public partial class LogParsingTests
 {
-    private static readonly Regex LogLineRegex = new(
-        @"^(?<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) \[(?<level>\w+)\]\s+(?<clientId>\w+):\s+(?<message>.*)$",
-        RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+    [GeneratedRegex(@"^(?<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) \[(?<level>\w+)\]\s+(?<clientId>\w+):\s+(?<message>.*)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
+    private static partial Regex LogLineRegex();
 
     [Theory]
     [InlineData(
@@ -22,7 +21,7 @@ public class LogParsingTests
         string expectedLevel, string expectedClientId, string expectedMessage)
     {
         // Act
-        var match = LogLineRegex.Match(input);
+        var match = LogLineRegex().Match(input);
 
         // Assert
         match.Success.Should().BeTrue();
@@ -40,7 +39,7 @@ public class LogParsingTests
     public void Should_Not_Parse_Invalid_Log_Lines(string input)
     {
         // Act
-        var match = LogLineRegex.Match(input);
+        var match = LogLineRegex().Match(input);
 
         // Assert
         match.Success.Should().BeFalse();

@@ -104,5 +104,6 @@ public class LogTailer : IDisposable
     public void Dispose()
     {
         Stop();
+        GC.SuppressFinalize(this);
     }
 } 

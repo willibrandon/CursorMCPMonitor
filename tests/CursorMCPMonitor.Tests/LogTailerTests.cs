@@ -3,12 +3,12 @@ namespace CursorMCPMonitor.Tests;
 public class LogTailerTests : IDisposable
 {
     private readonly string _testFilePath;
-    private readonly List<(string FilePath, string Line)> _receivedLines;
+    private readonly List<(string FilePath, string Line)> _receivedLines = [];
+    private static readonly string[] _testLines = ["Line 1", "Line 2"];
 
     public LogTailerTests()
     {
         _testFilePath = Path.Combine(Path.GetTempPath(), $"test_log_{Guid.NewGuid()}.log");
-        _receivedLines = new List<(string FilePath, string Line)>();
     }
 
     [Fact]
@@ -20,13 +20,13 @@ public class LogTailerTests : IDisposable
         await Task.Delay(100); // Give the tailer time to initialize
 
         // Act
-        await File.AppendAllLinesAsync(_testFilePath, new[] { "Line 1", "Line 2" });
+        await File.AppendAllLinesAsync(_testFilePath, _testLines);
         await Task.Delay(2000); // Give the tailer time to process
 
         // Assert
         _receivedLines.Should().HaveCount(2);
-        _receivedLines[0].Line.Should().Be("Line 1");
-        _receivedLines[1].Line.Should().Be("Line 2");
+        _receivedLines[0].Line.Should().Be(_testLines[0]);
+        _receivedLines[1].Line.Should().Be(_testLines[1]);
     }
 
     [Fact]
@@ -96,5 +96,7 @@ public class LogTailerTests : IDisposable
         {
             // Ignore cleanup errors
         }
+
+        GC.SuppressFinalize(this);
     }
 } 

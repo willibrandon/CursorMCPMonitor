@@ -3,13 +3,12 @@ namespace CursorMCPMonitor.Tests;
 public class RealLogDataTests : IDisposable
 {
     private readonly string _testFilePath;
-    private readonly List<(string FilePath, string Line)> _receivedLines;
+    private readonly List<(string FilePath, string Line)> _receivedLines = [];
     private readonly string _sourceLogFile;
 
     public RealLogDataTests()
     {
         _testFilePath = Path.Combine(Path.GetTempPath(), $"test_log_{Guid.NewGuid()}.log");
-        _receivedLines = [];
         _sourceLogFile = Path.Combine(AppContext.BaseDirectory, "data", "all_mcp_logs.txt");
     }
 
@@ -106,10 +105,10 @@ public class RealLogDataTests : IDisposable
 
         // Assert
         _receivedLines.Should().HaveCount(10);
-        foreach (var line in _receivedLines)
+        foreach (var (_, line) in _receivedLines)
         {
             // Verify each line matches our log pattern
-            line.Line.Should().MatchRegex(@"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} \[(info|error|warning)\].*$");
+            line.Should().MatchRegex(@"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} \[(info|error|warning)\].*$");
         }
     }
 
@@ -131,5 +130,7 @@ public class RealLogDataTests : IDisposable
         {
             // Ignore cleanup errors
         }
+
+        GC.SuppressFinalize(this);
     }
 } 

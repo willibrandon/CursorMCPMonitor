@@ -9,10 +9,7 @@ public class ConfigurationTests
     {
         // Arrange
         var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["LogsRoot"] = null
-            })
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["LogsRoot"] = null })
             .Build();
 
         // Act
@@ -60,7 +57,7 @@ public class ConfigurationTests
     {
         // Arrange
         var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .AddInMemoryCollection([])
             .Build();
 
         // Act

@@ -6,16 +6,15 @@ using System.Text.RegularExpressions;
 
 namespace CursorMCPMonitor;
 
-public class Program
+public partial class Program
 {
-    private static readonly Dictionary<string, FileSystemWatcher> _activeLogWatchers = new();
-    private static readonly Dictionary<string, LogTailer> _logTailers = new();
+    private static readonly Dictionary<string, FileSystemWatcher> _activeLogWatchers = [];
+    private static readonly Dictionary<string, LogTailer> _logTailers = [];
 
     // Regex to parse lines of the form:
     // 2025-03-02 12:26:34.698 [info] a602: Handling CreateClient action
-    private static readonly Regex LogLineRegex = new(
-        @"^(?<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) \[(?<level>\w+)\]\s+(?<clientId>\w+):\s+(?<message>.*)$",
-        RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+    [GeneratedRegex(@"^(?<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) \[(?<level>\w+)\]\s+(?<clientId>\w+):\s+(?<message>.*)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
+    private static partial Regex LogLineRegex();
 
     public static async Task Main(string[] args)
     {
@@ -161,7 +160,7 @@ public class Program
         if (string.IsNullOrWhiteSpace(line))
             return;
 
-        var match = LogLineRegex.Match(line);
+        var match = LogLineRegex().Match(line);
         if (!match.Success)
         {
             // Handle unstructured lines
