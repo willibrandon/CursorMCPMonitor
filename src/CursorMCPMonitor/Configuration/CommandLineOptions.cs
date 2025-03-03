@@ -18,7 +18,10 @@ public class CommandLineOptions
         var options = new Dictionary<string, string?>();
         
         // Define root command
-        var rootCommand = new RootCommand("Cursor MCP Monitor - Real-time monitoring of Model Context Protocol interactions");
+        var rootCommand = new RootCommand("Cursor MCP Monitor - Real-time monitoring of Model Context Protocol interactions")
+        {
+            TreatUnmatchedTokensAsErrors = true
+        };
         
         // Add options
         var logsRootOption = new Option<string>(

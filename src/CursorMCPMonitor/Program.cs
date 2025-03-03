@@ -10,6 +10,10 @@ using Serilog.Events;
 using System;
 using System.IO;
 using System.Text;
+using System.Reflection;
+using System.CommandLine;
+using System.CommandLine.Help;
+using System.CommandLine.IO;
 
 namespace CursorMCPMonitor;
 
@@ -25,6 +29,36 @@ public class Program
     /// <returns>A task representing the asynchronous operation.</returns>
     public static async Task Main(string[] args)
     {
+        // Simple early check for help and version
+        if (args.Length == 1)
+        {
+            if (args[0] == "--version" || args[0] == "-v" || args[0] == "-V")
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var version = assembly.GetName().Version;
+                Console.WriteLine($"Cursor MCP Monitor version {version}");
+                return;
+            }
+            
+            if (args[0] == "--help" || args[0] == "-h" || args[0] == "-?")
+            {
+                Console.WriteLine("Cursor MCP Monitor - Real-time monitoring of Model Context Protocol interactions");
+                Console.WriteLine();
+                Console.WriteLine("Usage:");
+                Console.WriteLine("  cursor-mcp [options]");
+                Console.WriteLine();
+                Console.WriteLine("Options:");
+                Console.WriteLine("  -l, --logs-root <path>          Root directory containing Cursor logs");
+                Console.WriteLine("  -p, --poll-interval <ms>        Polling interval in milliseconds");
+                Console.WriteLine("  -v, --verbosity <level>         Log verbosity level (debug, info, warning, error)");
+                Console.WriteLine("  -f, --log-pattern <pattern>     Log file pattern to monitor");
+                Console.WriteLine("  --filter <text>                 Filter log messages containing specific text");
+                Console.WriteLine("  --version                       Show version information");
+                Console.WriteLine("  -?, -h, --help                  Show help and usage information");
+                return;
+            }
+        }
+
         try
         {
             // Setup Serilog initially with basic console logging
