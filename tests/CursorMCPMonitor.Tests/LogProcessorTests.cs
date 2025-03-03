@@ -163,6 +163,52 @@ public class LogProcessorTests
     [InlineData("2024-03-02 12:26:34.698 [debug] a602: Debug message", "debug")]
     [InlineData("2024-03-02 12:26:34.698 [warning] a602: Warning message", "warning")]
     [InlineData("2024-03-02 12:26:34.698 [error] a602: Error message", "error")]
+    public void Should_Process_Different_Message_Types(string logLine, string expectedLevel)
+    {
+        // Arrange
+        _processor.SetVerbosityLevel("debug"); // Allow all levels
+
+        // Act
+        _processor.ProcessLogLine(_testFilePath, logLine);
+
+        // Assert
+        switch (expectedLevel)
+        {
+            case "error":
+                _consoleOutputMock.Verify(x => x.WriteError(It.IsAny<string>(), It.Is<string>(s => s.Contains("Error message"))), Times.Once);
+                break;
+            case "warning":
+                _consoleOutputMock.Verify(x => x.WriteWarning(It.IsAny<string>(), It.Is<string>(s => s.Contains("Warning message"))), Times.Once);
+                break;
+            case "info":
+                _consoleOutputMock.Verify(x => x.WriteInfo(It.IsAny<string>(), It.Is<string>(s => s.Contains("Test message"))), Times.Once);
+                break;
+            case "debug":
+                _consoleOutputMock.Verify(x => x.WriteInfo(It.IsAny<string>(), It.Is<string>(s => s.Contains("Debug message"))), Times.Once);
+                break;
+        }
+    }
+
+    [Theory]
+    [InlineData("2024-03-02 12:26:34.698 [unknown] a602: Test message")]
+    [InlineData("2024-03-02 12:26:34.698 [] a602: Test message")]
+    public void Should_Handle_Unknown_Log_Level(string logLine)
+    {
+        // Arrange
+        _processor.SetVerbosityLevel("debug"); // Allow all levels
+
+        // Act
+        _processor.ProcessLogLine(_testFilePath, logLine);
+
+        // Assert
+        _consoleOutputMock.Verify(x => x.WriteRaw(It.IsAny<string>(), logLine), Times.Once);
+    }
+
+    [Theory]
+    [InlineData("2024-03-02 12:26:34.698 [info] a602: Test message", "info")]
+    [InlineData("2024-03-02 12:26:34.698 [debug] a602: Debug message", "debug")]
+    [InlineData("2024-03-02 12:26:34.698 [warning] a602: Warning message", "warning")]
+    [InlineData("2024-03-02 12:26:34.698 [error] a602: Error message", "error")]
     public void Should_Parse_Log_Level_Correctly(string logLine, string expectedLevel)
     {
         // Arrange

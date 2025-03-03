@@ -189,4 +189,49 @@ public class LogMonitorTests
             // Ignore cleanup errors
         }
     }
+
+    [Fact]
+    public void Should_Dispose_Watchers_And_Tailers()
+    {
+        // Arrange
+        var rootDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(rootDir);
+
+        try
+        {
+            // Create initial directory structure and start monitoring
+            var logDir = Path.Combine(rootDir, "window1", "exthost", "anysphere.cursor-always-local");
+            Directory.CreateDirectory(logDir);
+            _monitor.StartMonitoring(rootDir, _config);
+
+            // Give time for watchers to be set up
+            Thread.Sleep(500);
+
+            // Create a log file to trigger tailer creation
+            var logFile = Path.Combine(logDir, "Cursor MCP.log");
+            File.WriteAllText(logFile, "test log content");
+            Thread.Sleep(500);
+
+            // Act
+            _monitor.Dispose();
+
+            // Create new file after dispose
+            var newLogFile = Path.Combine(logDir, "Cursor MCP2.log");
+            File.WriteAllText(newLogFile, "new test content");
+            Thread.Sleep(500);
+
+            // Assert
+            _consoleOutputMock.Verify(x => x.WriteSuccess("LogTailer:", It.Is<string>(s => s.Contains(logFile))), Times.Once);
+            _consoleOutputMock.Verify(x => x.WriteSuccess("LogTailer:", It.Is<string>(s => s.Contains(newLogFile))), Times.Never);
+        }
+        finally
+        {
+            // Cleanup
+            if (Directory.Exists(rootDir))
+            {
+                Thread.Sleep(100); // Give time for handles to be released
+                Directory.Delete(rootDir, true);
+            }
+        }
+    }
 } 

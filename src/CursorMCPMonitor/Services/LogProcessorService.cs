@@ -1,7 +1,6 @@
 using CursorMCPMonitor.Interfaces;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
-using CursorMCPMonitor.Configuration;
 
 namespace CursorMCPMonitor.Services;
 
@@ -67,7 +66,7 @@ public partial class LogProcessorService : ILogProcessorService
     /// <summary>
     /// Converts a log level string from the log file to the corresponding LogLevel enum value
     /// </summary>
-    private LogLevel ConvertLogLevel(string level)
+    private static LogLevel? ConvertLogLevel(string level)
     {
         return level?.ToLower() switch
         {
@@ -75,7 +74,7 @@ public partial class LogProcessorService : ILogProcessorService
             "info" => LogLevel.Information,
             "warning" or "warn" => LogLevel.Warning,
             "error" or "err" => LogLevel.Error,
-            _ => LogLevel.Information
+            _ => null
         };
     }
 
@@ -110,6 +109,12 @@ public partial class LogProcessorService : ILogProcessorService
 
         // Apply verbosity filter for structured logs
         var logLevel = ConvertLogLevel(level);
+        if (logLevel == null)
+        {
+            ProcessUnstructuredLine(fullFilePath, line);
+            return;
+        }
+
         if (_verbosityLevel != LogLevel.Debug && logLevel < _verbosityLevel)
         {
             // When Debug is selected, show everything

@@ -102,6 +102,49 @@ public class LogTailerTests : IDisposable
         Assert.Equal(lines, _processedLines);
     }
 
+    [Fact]
+    public async Task Should_Handle_IOException()
+    {
+        // Arrange
+        var lines = new[] { "Line 1", "Line 2" };
+        var tailer = new LogTailer(_testLogFile, ProcessLine, 100);
+
+        // Act - Write initial lines
+        await File.WriteAllLinesAsync(_testLogFile, lines);
+        await Task.Delay(1000);
+
+        // Simulate IOException by making file inaccessible
+        using (var stream = File.Open(_testLogFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            await Task.Delay(200); // Wait for next poll attempt
+        }
+
+        // Write more lines to ensure tailer recovers
+        await File.WriteAllLinesAsync(_testLogFile, new[] { "Line 3" });
+        await Task.Delay(1000);
+
+        // Assert
+        Assert.Equal(3, _processedLines.Count);
+    }
+
+    [Fact]
+    public async Task Should_Handle_General_Exception()
+    {
+        // Arrange
+        var mockProcessLine = new Mock<Action<string, string>>();
+        mockProcessLine.Setup(x => x.Invoke(It.IsAny<string>(), It.IsAny<string>()))
+            .Throws(new InvalidOperationException("Test exception"));
+
+        var tailer = new LogTailer(_testLogFile, mockProcessLine.Object, 100);
+
+        // Act
+        await File.WriteAllLinesAsync(_testLogFile, new[] { "Line 1" });
+        await Task.Delay(1000);
+
+        // Assert
+        mockProcessLine.Verify(x => x.Invoke(It.IsAny<string>(), It.IsAny<string>()), Times.AtLeastOnce);
+    }
+
     private void ProcessLine(string filePath, string line)
     {
         lock (_processedLines)
