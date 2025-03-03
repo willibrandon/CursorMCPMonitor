@@ -70,20 +70,25 @@ public class LogMonitorTests
         var rootDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         Directory.CreateDirectory(rootDir);
 
+        // Create the directory structure first
+        var tempDir = Path.Combine(rootDir, "window1", "exthost", "anysphere.cursor-always-local");
+        Directory.CreateDirectory(tempDir);
+
+        // Give the directory creation time to be processed
+        Thread.Sleep(1000);
+
         // Act
         _monitor.StartMonitoring(rootDir, _config);
 
         // Give the monitor time to set up watchers
-        Thread.Sleep(500);
+        Thread.Sleep(1000);
 
         // Create the log file after the monitor is running
-        var tempDir = Path.Combine(rootDir, "window1", "exthost", "anysphere.cursor-always-local");
-        Directory.CreateDirectory(tempDir);
         var filePath = Path.Combine(tempDir, fileName);
         File.WriteAllText(filePath, "test content");
 
-        // Give the file system watcher time to process
-        Thread.Sleep(500);
+        // Give the file system watcher more time to process on slower systems
+        Thread.Sleep(2000);
 
         // Assert
         if (shouldMatch)
