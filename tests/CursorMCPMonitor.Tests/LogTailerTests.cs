@@ -5,9 +5,8 @@ namespace CursorMCPMonitor.Tests;
 /// </summary>
 public class LogTailerTests : IDisposable
 {
-    private readonly string _testFilePath;
-    private readonly List<(string FilePath, string Line)> _receivedLines = [];
-    private static readonly string[] _testLines = ["Line 1", "Line 2"];
+    private readonly string _testLogFile;
+    private readonly List<string> _processedLines;
 
     /// <summary>
     /// Initializes a new instance of the LogTailerTests class.
@@ -15,77 +14,100 @@ public class LogTailerTests : IDisposable
     /// </summary>
     public LogTailerTests()
     {
-        _testFilePath = Path.Combine(Path.GetTempPath(), $"test_log_{Guid.NewGuid()}.log");
+        _testLogFile = Path.Combine(Path.GetTempPath(), $"test_log_{Guid.NewGuid()}.log");
+        _processedLines = new List<string>();
+        File.WriteAllText(_testLogFile, ""); // Create empty file
     }
 
     [Fact]
-    public async Task Should_Detect_New_Lines()
+    public async Task Should_Process_New_Lines()
     {
         // Arrange
-        File.WriteAllText(_testFilePath, string.Empty); // Start with empty file
-        using var tailer = new LogTailer(_testFilePath, OnLineReceived);
-        await Task.Delay(100); // Give the tailer time to initialize
+        var lines = new[] { "Line 1", "Line 2", "Line 3" };
+        var tailer = new LogTailer(_testLogFile, ProcessLine, 100);
 
         // Act
-        await File.AppendAllLinesAsync(_testFilePath, _testLines);
-        await Task.Delay(2000); // Give the tailer time to process
+        await File.WriteAllLinesAsync(_testLogFile, lines);
+        await Task.Delay(1000); // Give more time for processing
 
         // Assert
-        Assert.Equal(2, _receivedLines.Count);
-        Assert.Equal(_testLines[0], _receivedLines[0].Line);
-        Assert.Equal(_testLines[1], _receivedLines[1].Line);
+        Assert.Equal(lines.Length, _processedLines.Count);
+        Assert.Equal(lines, _processedLines);
     }
 
     [Fact]
     public async Task Should_Handle_File_Rotation()
     {
         // Arrange
-        File.WriteAllText(_testFilePath, string.Empty); // Start with empty file
-        using var tailer = new LogTailer(_testFilePath, OnLineReceived);
-        await Task.Delay(100); // Give the tailer time to initialize
+        var initialLines = new[] { "Line 1", "Line 2" };
+        var newLines = new[] { "Line 3", "Line 4" };
+        var tailer = new LogTailer(_testLogFile, ProcessLine, 100);
+
+        // Act - Write initial lines
+        await File.WriteAllLinesAsync(_testLogFile, initialLines);
+        await Task.Delay(1000); // Give more time for processing
 
         // Act - Simulate log rotation
-        File.Delete(_testFilePath);
-        await File.WriteAllTextAsync(_testFilePath, "New log file\n");
-        await Task.Delay(2000); // Give the tailer time to process
+        File.Delete(_testLogFile);
+        await Task.Delay(200); // Give time for deletion to be detected
+        await File.WriteAllLinesAsync(_testLogFile, newLines);
+        await Task.Delay(1000); // Give more time for processing
 
         // Assert
-        Assert.Single(_receivedLines);
-        Assert.Equal("New log file", _receivedLines[0].Line);
+        Assert.Equal(4, _processedLines.Count);
+        Assert.Equal(initialLines.Concat(newLines), _processedLines);
     }
 
     [Fact]
     public async Task Should_Handle_File_Truncation()
     {
         // Arrange
-        File.WriteAllText(_testFilePath, string.Empty); // Start with empty file
-        using var tailer = new LogTailer(_testFilePath, OnLineReceived);
-        await Task.Delay(100); // Give the tailer time to initialize
+        var initialLines = new[] { "Line 1", "Line 2" };
+        var newLines = new[] { "Line 3", "Line 4" };
+        var tailer = new LogTailer(_testLogFile, ProcessLine, 100);
 
-        // Act - Write initial content then truncate
-        await File.WriteAllTextAsync(_testFilePath, "New content after truncate\n");
-        await Task.Delay(2000); // Give the tailer time to process
+        // Act - Write initial lines
+        await File.WriteAllLinesAsync(_testLogFile, initialLines);
+        await Task.Delay(1000); // Give more time for processing
+
+        // Act - Simulate truncation
+        File.WriteAllText(_testLogFile, ""); // Truncate
+        await Task.Delay(200); // Give time for truncation to be detected
+        await File.WriteAllLinesAsync(_testLogFile, newLines);
+        await Task.Delay(1000); // Give more time for processing
 
         // Assert
-        Assert.Single(_receivedLines);
-        Assert.Equal("New content after truncate", _receivedLines[0].Line);
+        Assert.Equal(4, _processedLines.Count);
+        Assert.Equal(initialLines.Concat(newLines), _processedLines);
     }
 
     [Fact]
-    public void Should_Stop_On_Dispose()
+    public async Task Should_Stop_On_Dispose()
     {
         // Arrange
-        File.WriteAllText(_testFilePath, string.Empty); // Start with empty file
-        var tailer = new LogTailer(_testFilePath, OnLineReceived);
+        var lines = new[] { "Line 1", "Line 2" };
+        var tailer = new LogTailer(_testLogFile, ProcessLine, 100);
 
-        // Act & Assert - No exception should be thrown
+        // Act
+        await File.WriteAllLinesAsync(_testLogFile, lines);
+        await Task.Delay(1000); // Give more time for processing
         tailer.Dispose();
-        tailer.Dispose(); // Second dispose should be safe
+
+        // Write more lines after dispose
+        await File.WriteAllLinesAsync(_testLogFile, new[] { "Line 3" });
+        await Task.Delay(1000); // Give more time to ensure no processing occurs
+
+        // Assert
+        Assert.Equal(2, _processedLines.Count); // Only first two lines processed
+        Assert.Equal(lines, _processedLines);
     }
 
-    private void OnLineReceived(string filePath, string line)
+    private void ProcessLine(string filePath, string line)
     {
-        _receivedLines.Add((filePath, line));
+        lock (_processedLines)
+        {
+            _processedLines.Add(line);
+        }
     }
 
     /// <summary>
@@ -95,9 +117,9 @@ public class LogTailerTests : IDisposable
     {
         try
         {
-            if (File.Exists(_testFilePath))
+            if (File.Exists(_testLogFile))
             {
-                File.Delete(_testFilePath);
+                File.Delete(_testLogFile);
             }
         }
         catch

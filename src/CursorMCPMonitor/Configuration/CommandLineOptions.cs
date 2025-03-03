@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using System.CommandLine;
 using System.CommandLine.NamingConventionBinder;
 
