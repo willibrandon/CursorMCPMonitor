@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Configuration;
-using FluentAssertions;
 
 namespace CursorMCPMonitor.Tests;
 

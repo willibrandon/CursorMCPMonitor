@@ -1,8 +1,8 @@
-﻿using System.Text;
-using System.Text.RegularExpressions;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace CursorMCPMonitor;
 

@@ -1,6 +1,3 @@
-using System.Text;
-using FluentAssertions;
-
 namespace CursorMCPMonitor.Tests;
 
 public class RealLogDataTests : IDisposable
@@ -12,7 +9,7 @@ public class RealLogDataTests : IDisposable
     public RealLogDataTests()
     {
         _testFilePath = Path.Combine(Path.GetTempPath(), $"test_log_{Guid.NewGuid()}.log");
-        _receivedLines = new List<(string FilePath, string Line)>();
+        _receivedLines = [];
         _sourceLogFile = Path.Combine(AppContext.BaseDirectory, "data", "all_mcp_logs.txt");
     }
 

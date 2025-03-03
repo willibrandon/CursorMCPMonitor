@@ -1,6 +1,3 @@
-using System.Text;
-using FluentAssertions;
-
 namespace CursorMCPMonitor.Tests;
 
 public class LogTailerTests : IDisposable
