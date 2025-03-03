@@ -31,9 +31,9 @@ public class LogTailerTests : IDisposable
         await Task.Delay(2000); // Give the tailer time to process
 
         // Assert
-        _receivedLines.Should().HaveCount(2);
-        _receivedLines[0].Line.Should().Be(_testLines[0]);
-        _receivedLines[1].Line.Should().Be(_testLines[1]);
+        Assert.Equal(2, _receivedLines.Count);
+        Assert.Equal(_testLines[0], _receivedLines[0].Line);
+        Assert.Equal(_testLines[1], _receivedLines[1].Line);
     }
 
     [Fact]
@@ -50,8 +50,8 @@ public class LogTailerTests : IDisposable
         await Task.Delay(2000); // Give the tailer time to process
 
         // Assert
-        _receivedLines.Should().ContainSingle()
-            .Which.Line.Should().Be("New log file");
+        Assert.Single(_receivedLines);
+        Assert.Equal("New log file", _receivedLines[0].Line);
     }
 
     [Fact]
@@ -67,8 +67,8 @@ public class LogTailerTests : IDisposable
         await Task.Delay(2000); // Give the tailer time to process
 
         // Assert
-        _receivedLines.Should().ContainSingle()
-            .Which.Line.Should().Be("New content after truncate");
+        Assert.Single(_receivedLines);
+        Assert.Equal("New content after truncate", _receivedLines[0].Line);
     }
 
     [Fact]
@@ -78,10 +78,8 @@ public class LogTailerTests : IDisposable
         File.WriteAllText(_testFilePath, string.Empty); // Start with empty file
         var tailer = new LogTailer(_testFilePath, OnLineReceived);
 
-        // Act
+        // Act & Assert - No exception should be thrown
         tailer.Dispose();
-
-        // Assert - No exception should be thrown
         tailer.Dispose(); // Second dispose should be safe
     }
 

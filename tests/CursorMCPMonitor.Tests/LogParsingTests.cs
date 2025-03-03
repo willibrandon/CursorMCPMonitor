@@ -35,11 +35,11 @@ public partial class LogParsingTests
         var match = LogLineRegex().Match(input);
 
         // Assert
-        match.Success.Should().BeTrue();
-        match.Groups["timestamp"].Value.Should().Be(expectedTimestamp);
-        match.Groups["level"].Value.Should().Be(expectedLevel);
-        match.Groups["clientId"].Value.Should().Be(expectedClientId);
-        match.Groups["message"].Value.Should().Be(expectedMessage);
+        Assert.True(match.Success);
+        Assert.Equal(expectedTimestamp, match.Groups["timestamp"].Value);
+        Assert.Equal(expectedLevel, match.Groups["level"].Value);
+        Assert.Equal(expectedClientId, match.Groups["clientId"].Value);
+        Assert.Equal(expectedMessage, match.Groups["message"].Value);
     }
 
     [Theory]
@@ -53,6 +53,6 @@ public partial class LogParsingTests
         var match = LogLineRegex().Match(input);
 
         // Assert
-        match.Success.Should().BeFalse();
+        Assert.False(match.Success);
     }
 } 

@@ -33,10 +33,10 @@ public class RealLogDataTests : IDisposable
         await Task.Delay(2000); // Give the tailer time to process
 
         // Assert
-        _receivedLines.Should().HaveCount(10);
+        Assert.Equal(10, _receivedLines.Count);
         for (int i = 0; i < 10; i++)
         {
-            _receivedLines[i].Line.Should().Be(firstTenLines[i]);
+            Assert.Equal(firstTenLines[i], _receivedLines[i].Line);
         }
     }
 
@@ -60,11 +60,11 @@ public class RealLogDataTests : IDisposable
         await Task.Delay(2000);
 
         // Assert
-        _receivedLines.Should().HaveCount(10);
+        Assert.Equal(10, _receivedLines.Count);
         for (int i = 0; i < 5; i++)
         {
-            _receivedLines[i].Line.Should().Be(firstBatch[i]);
-            _receivedLines[i + 5].Line.Should().Be(secondBatch[i]);
+            Assert.Equal(firstBatch[i], _receivedLines[i].Line);
+            Assert.Equal(secondBatch[i], _receivedLines[i + 5].Line);
         }
     }
 
@@ -86,10 +86,10 @@ public class RealLogDataTests : IDisposable
         await Task.Delay(1000); // Final wait
 
         // Assert
-        _receivedLines.Should().HaveCount(5);
+        Assert.Equal(5, _receivedLines.Count);
         for (int i = 0; i < 5; i++)
         {
-            _receivedLines[i].Line.Should().Be(lines[i]);
+            Assert.Equal(lines[i], _receivedLines[i].Line);
         }
     }
 
@@ -111,11 +111,11 @@ public class RealLogDataTests : IDisposable
         await Task.Delay(2000);
 
         // Assert
-        _receivedLines.Should().HaveCount(10);
+        Assert.Equal(10, _receivedLines.Count);
         foreach (var (_, line) in _receivedLines)
         {
             // Verify each line matches our log pattern
-            line.Should().MatchRegex(@"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} \[(info|error|warning)\].*$");
+            Assert.Matches(@"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} \[(info|error|warning)\].*$", line);
         }
     }
 

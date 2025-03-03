@@ -27,11 +27,12 @@ public class ConfigurationTests
             );
 
         // Assert
-        logsRoot.Should().Be(Path.Combine(
+        var expected = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "Cursor",
             "logs"
-        ));
+        );
+        Assert.Equal(expected, logsRoot);
     }
 
     /// <summary>
@@ -58,7 +59,7 @@ public class ConfigurationTests
             );
 
         // Assert
-        logsRoot.Should().Be(customPath);
+        Assert.Equal(customPath, logsRoot);
     }
 
     /// <summary>
@@ -76,7 +77,7 @@ public class ConfigurationTests
         var pollInterval = config.GetValue<int>("PollIntervalMs", 1000);
 
         // Assert
-        pollInterval.Should().Be(1000);
+        Assert.Equal(1000, pollInterval);
     }
 
     /// <summary>
@@ -101,6 +102,6 @@ public class ConfigurationTests
         var pollInterval = config.GetValue<int>("PollIntervalMs", 1000);
 
         // Assert
-        pollInterval.Should().Be(interval);
+        Assert.Equal(interval, pollInterval);
     }
 } 
