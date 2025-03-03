@@ -3,34 +3,33 @@ using Microsoft.Extensions.Configuration;
 namespace CursorMCPMonitor.Configuration;
 
 /// <summary>
-/// Represents the application configuration settings.
+/// Application configuration settings.
 /// </summary>
 public class AppConfig
 {
     /// <summary>
-    /// Gets or sets the root directory for Cursor logs.
+    /// Root directory where Cursor log files are stored.
     /// </summary>
     public string? LogsRoot { get; set; }
     
     /// <summary>
-    /// Gets or sets the polling interval in milliseconds.
+    /// Interval in milliseconds between checks for new content.
     /// </summary>
     public int PollIntervalMs { get; set; } = 1000;
     
     /// <summary>
-    /// Gets or sets the log file pattern to monitor.
+    /// Pattern for log files to monitor.
     /// </summary>
     public string LogPattern { get; set; } = "Cursor MCP.log";
     
     /// <summary>
-    /// Gets or sets the log verbosity level.
+    /// Logging verbosity level.
     /// </summary>
     public string Verbosity { get; set; } = "Information";
     
     /// <summary>
-    /// Gets the default logs directory based on the operating system.
+    /// Gets the default logs directory for Cursor.
     /// </summary>
-    /// <returns>The default logs directory path</returns>
     public static string GetDefaultLogsDirectory() => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "Cursor",
@@ -47,8 +46,11 @@ public class AppConfig
         var config = new AppConfig();
         configuration.Bind(config);
         
-        // If LogsRoot is null, use the default
-        config.LogsRoot ??= GetDefaultLogsDirectory();
+        // If LogsRoot is null or empty, use the default
+        if (string.IsNullOrEmpty(config.LogsRoot))
+        {
+            config.LogsRoot = GetDefaultLogsDirectory();
+        }
         
         // Map logging level from Logging:LogLevel:Default if set
         var loggingLevel = configuration.GetValue<string>("Logging:LogLevel:Default");

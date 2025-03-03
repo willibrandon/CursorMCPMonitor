@@ -1,6 +1,7 @@
 using CursorMCPMonitor.Interfaces;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using CursorMCPMonitor.Configuration;
 
 namespace CursorMCPMonitor.Services;
 

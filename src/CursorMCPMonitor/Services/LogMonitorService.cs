@@ -8,19 +8,22 @@ namespace CursorMCPMonitor.Services;
 /// Service responsible for monitoring log directories and files,
 /// detecting new log files, and managing log tailers.
 /// </summary>
-public class LogMonitorService
+public class LogMonitorService : ILogMonitorService
 {
     private readonly Dictionary<string, FileSystemWatcher> _activeLogWatchers = [];
     private readonly Dictionary<string, LogTailer> _logTailers = [];
     private readonly ILogProcessorService _logProcessor;
     private readonly ILogger<LogMonitorService> _logger;
+    private readonly IConsoleOutputService _consoleOutput;
 
     public LogMonitorService(
         ILogProcessorService logProcessor,
-        ILogger<LogMonitorService> logger)
+        ILogger<LogMonitorService> logger,
+        IConsoleOutputService consoleOutput)
     {
         _logProcessor = logProcessor;
         _logger = logger;
+        _consoleOutput = consoleOutput;
     }
 
     /// <summary>
@@ -30,13 +33,23 @@ public class LogMonitorService
     /// <param name="appConfig">Application configuration</param>
     public void StartMonitoring(string rootLogDirectory, AppConfig appConfig)
     {
+        if (string.IsNullOrEmpty(rootLogDirectory))
+        {
+            _logger.LogError("Log root directory path is null or empty");
+            _consoleOutput.WriteError("Error:", "Log root directory path is null or empty");
+            return;
+        }
+
         if (!Directory.Exists(rootLogDirectory))
         {
             _logger.LogError("Log root does not exist: {LogRoot}", rootLogDirectory);
+            _consoleOutput.WriteError("Error:", $"Log root does not exist: {rootLogDirectory}");
             return;
         }
 
         _logger.LogInformation("Starting monitoring of root directory: {RootDir}", rootLogDirectory);
+        _consoleOutput.WriteSuccess("Monitoring:", $"Root directory: {rootLogDirectory}");
+        _consoleOutput.WriteInfo("Looking for:", $"'{appConfig.LogPattern}' files in exthost/anysphere.cursor-always-local");
 
         // Check for existing log subdirectories
         foreach (var subDir in Directory.GetDirectories(rootLogDirectory))
