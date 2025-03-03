@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Text;
 using System.Text.RegularExpressions;
+using CursorMCPMonitor.Configuration;
 
 namespace CursorMCPMonitor;
 
@@ -29,28 +30,25 @@ public partial class Program
     {
         var host = CreateHostBuilder(args).Build();
         var config = host.Services.GetRequiredService<IConfiguration>();
+        var appConfig = AppConfig.Load(config);
 
         Console.OutputEncoding = Encoding.UTF8;
         Console.WriteLine("=== Cursor AI MCP Log Monitor ===");
+        Console.WriteLine($"Verbosity level: {appConfig.Verbosity}");
+        Console.WriteLine($"Poll interval: {appConfig.PollIntervalMs}ms");
+        Console.WriteLine($"Log file pattern: {appConfig.LogPattern}");
 
-        // Get the logs root directory from configuration or environment
-        var logsRoot = config.GetValue<string>("LogsRoot") ?? 
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "Cursor",
-                "logs"
-            );
-
-        if (!Directory.Exists(logsRoot))
+        // Get the logs root directory from configuration
+        if (!Directory.Exists(appConfig.LogsRoot))
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"Log root does not exist: {logsRoot}");
+            Console.WriteLine($"Log root does not exist: {appConfig.LogsRoot}");
             Console.ResetColor();
             return;
         }
 
         // Monitor the root logs directory for new subdirectories
-        var rootWatcher = new FileSystemWatcher(logsRoot)
+        var rootWatcher = new FileSystemWatcher(appConfig.LogsRoot)
         {
             NotifyFilter = NotifyFilters.DirectoryName,
             IncludeSubdirectories = false,
@@ -61,19 +59,19 @@ public partial class Program
         {
             if (Directory.Exists(e.FullPath))
             {
-                HandleNewLogSubdirectory(e.FullPath);
+                HandleNewLogSubdirectory(e.FullPath, appConfig);
             }
         };
 
         // Handle any existing subdirectories
-        foreach (var subDir in Directory.GetDirectories(logsRoot))
+        foreach (var subDir in Directory.GetDirectories(appConfig.LogsRoot))
         {
-            HandleNewLogSubdirectory(subDir);
+            HandleNewLogSubdirectory(subDir, appConfig);
         }
 
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"Monitoring for new subdirectories in: {logsRoot}");
-        Console.WriteLine("Looking for 'Cursor MCP.log' files in exthost/anysphere.cursor-always-local...");
+        Console.WriteLine($"Monitoring for new subdirectories in: {appConfig.LogsRoot}");
+        Console.WriteLine($"Looking for '{appConfig.LogPattern}' files in exthost/anysphere.cursor-always-local...");
         Console.ResetColor();
 
         // Keep the application running
@@ -87,11 +85,17 @@ public partial class Program
                 config.SetBasePath(Directory.GetCurrentDirectory())
                       .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                       .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-                      .AddEnvironmentVariables()
-                      .AddCommandLine(args);
+                      .AddEnvironmentVariables();
+                      
+                // Add command line arguments
+                var cmdLineArgs = CommandLineOptions.Parse(args);
+                if (cmdLineArgs.Count > 0)
+                {
+                    config.AddInMemoryCollection(cmdLineArgs);
+                }
             });
 
-    private static void HandleNewLogSubdirectory(string subDirPath)
+    private static void HandleNewLogSubdirectory(string subDirPath, AppConfig appConfig)
     {
         lock (_activeLogWatchers)
         {
@@ -105,7 +109,7 @@ public partial class Program
             NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName
         };
 
-        watcher.Created += (_, e) => OnSubdirectoryFileCreated(subDirPath, e);
+        watcher.Created += (_, e) => OnSubdirectoryFileCreated(subDirPath, e, appConfig);
         watcher.EnableRaisingEvents = true;
 
         lock (_activeLogWatchers)
@@ -113,49 +117,50 @@ public partial class Program
             _activeLogWatchers[subDirPath] = watcher;
         }
 
-        CheckForExistingCursorLog(subDirPath);
+        CheckForExistingCursorLog(subDirPath, appConfig);
 
         Console.ForegroundColor = ConsoleColor.Cyan;
         Console.WriteLine($"[Subdirectory] Monitoring new subdirectory: {subDirPath}");
         Console.ResetColor();
     }
 
-    private static void OnSubdirectoryFileCreated(string rootSubDir, FileSystemEventArgs e)
+    private static void OnSubdirectoryFileCreated(string rootSubDir, FileSystemEventArgs e, AppConfig appConfig)
     {
         if (!File.Exists(e.FullPath))
             return;
 
         var relative = Path.GetRelativePath(rootSubDir, e.FullPath);
+        // Use more flexible pattern matching based on appConfig.LogPattern
         if (relative.Replace('\\', '/').Contains("/window") && 
-            relative.Replace('\\', '/').EndsWith("exthost/anysphere.cursor-always-local/Cursor MCP.log",
+            relative.Replace('\\', '/').EndsWith($"exthost/anysphere.cursor-always-local/{appConfig.LogPattern}",
             StringComparison.OrdinalIgnoreCase))
         {
-            StartTailer(e.FullPath);
+            StartTailer(e.FullPath, appConfig);
         }
     }
 
-    private static void CheckForExistingCursorLog(string subDirPath)
+    private static void CheckForExistingCursorLog(string subDirPath, AppConfig appConfig)
     {
         // Check all window* subdirectories
         foreach (var windowDir in Directory.GetDirectories(subDirPath, "window*"))
         {
             var exthostPath = Path.Combine(windowDir, "exthost", "anysphere.cursor-always-local");
-            var logFile = Path.Combine(exthostPath, "Cursor MCP.log");
+            var logFile = Path.Combine(exthostPath, appConfig.LogPattern);
             if (File.Exists(logFile))
             {
-                StartTailer(logFile);
+                StartTailer(logFile, appConfig);
             }
         }
     }
 
-    private static void StartTailer(string fullFilePath)
+    private static void StartTailer(string fullFilePath, AppConfig appConfig)
     {
         lock (_logTailers)
         {
             if (_logTailers.ContainsKey(fullFilePath))
                 return;
 
-            var tailer = new LogTailer(fullFilePath, ProcessLogLine);
+            var tailer = new LogTailer(fullFilePath, ProcessLogLine, appConfig.PollIntervalMs);
             _logTailers[fullFilePath] = tailer;
         }
 

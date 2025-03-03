@@ -25,6 +25,9 @@ The Model Context Protocol (MCP) is an open protocol that standardizes how appli
   - Gray: General information messages
 - Supports log rotation and file truncation
 - Cross-platform support (Windows, macOS, Linux)
+- Smart error handling with exponential backoff and retry logic
+- Configurable polling interval and log file patterns
+- Command-line interface for easy customization
 
 ## Configuration
 
@@ -34,6 +37,7 @@ The application can be configured through `appsettings.json`:
 {
   "LogsRoot": null,
   "PollIntervalMs": 1000,
+  "LogPattern": "Cursor MCP.log",
   "Logging": {
     "LogLevel": {
       "Default": "Information",
@@ -48,13 +52,40 @@ The application can be configured through `appsettings.json`:
   - macOS: `~/Library/Application Support/Cursor/logs`
   - Linux: `~/.config/Cursor/logs`
 - `PollIntervalMs`: How often to check for new log lines (in milliseconds)
+- `LogPattern`: The log file pattern to monitor (defaults to "Cursor MCP.log")
+- `Logging:LogLevel:Default`: The verbosity level (Information, Debug, Warning, Error)
 
 You can also override settings using environment variables:
 ```bash
 # Windows
 set LogsRoot=C:\CustomPath\Cursor\logs
+set PollIntervalMs=500
 # Linux/macOS
 export LogsRoot=/custom/path/cursor/logs
+export PollIntervalMs=500
+```
+
+## Command-Line Options
+
+The application supports the following command-line options:
+
+```
+--logs-root, -l     Root directory containing Cursor logs
+--poll-interval, -p Polling interval in milliseconds
+--verbosity, -v     Log verbosity level (debug, info, warning, error)
+--log-pattern, -f   Log file pattern to monitor
+```
+
+Examples:
+```bash
+# Monitor logs with 500ms polling interval
+dotnet run -- --poll-interval 500
+
+# Monitor logs in a custom directory with higher verbosity
+dotnet run -- --logs-root "C:\CustomPath\Cursor\logs" --verbosity debug
+
+# Monitor a different log file pattern
+dotnet run -- --log-pattern "Cursor*.log"
 ```
 
 ## Building and Running
@@ -83,6 +114,15 @@ docker build -t cursor-mcp-monitor .
 # Run the container
 docker run -it --rm cursor-mcp-monitor
 ```
+
+## Error Handling
+
+The application includes advanced error handling:
+
+- Exponential backoff with jitter for file access errors
+- Automatic recovery from transient issues
+- Detailed error reporting with color-coded console output
+- File rotation and truncation detection
 
 ## Use Cases
 
