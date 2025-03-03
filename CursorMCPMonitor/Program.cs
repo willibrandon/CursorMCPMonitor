@@ -6,6 +6,10 @@ using System.Text.RegularExpressions;
 
 namespace CursorMCPMonitor;
 
+/// <summary>
+/// Main program class that monitors Cursor MCP log files and processes their contents.
+/// Handles directory watching, log file detection, and real-time log processing.
+/// </summary>
 public partial class Program
 {
     private static readonly Dictionary<string, FileSystemWatcher> _activeLogWatchers = [];
@@ -16,6 +20,11 @@ public partial class Program
     [GeneratedRegex(@"^(?<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) \[(?<level>\w+)\]\s+(?<clientId>\w+):\s+(?<message>.*)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
     private static partial Regex LogLineRegex();
 
+    /// <summary>
+    /// Entry point of the application. Initializes the log monitoring system and starts watching for changes.
+    /// </summary>
+    /// <param name="args">Command line arguments passed to the application.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public static async Task Main(string[] args)
     {
         var host = CreateHostBuilder(args).Build();

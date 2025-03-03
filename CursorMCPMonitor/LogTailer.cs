@@ -3,7 +3,8 @@ using System.Text;
 namespace CursorMCPMonitor;
 
 /// <summary>
-/// A simple class that tails a file line-by-line in the background.
+/// A class that monitors a log file for changes and processes new lines as they are added.
+/// Supports file rotation, truncation, and real-time updates.
 /// </summary>
 public class LogTailer : IDisposable
 {
@@ -15,6 +16,12 @@ public class LogTailer : IDisposable
     private readonly int _pollIntervalMs;
     private bool _isFirstRead = true;
 
+    /// <summary>
+    /// Initializes a new instance of the LogTailer class.
+    /// </summary>
+    /// <param name="filePath">The full path to the log file to monitor.</param>
+    /// <param name="onLine">Callback action that is invoked for each new line detected. Takes file path and line content as parameters.</param>
+    /// <param name="pollIntervalMs">Optional interval in milliseconds between checks for new content. Defaults to 1000ms.</param>
     public LogTailer(string filePath, Action<string, string> onLine, int pollIntervalMs = 1000)
     {
         _filePath = filePath;
@@ -24,6 +31,9 @@ public class LogTailer : IDisposable
         _thread.Start();
     }
 
+    /// <summary>
+    /// Stops the log tailing operation and cleans up resources.
+    /// </summary>
     public void Stop()
     {
         _stop = true;
@@ -101,6 +111,9 @@ public class LogTailer : IDisposable
         }
     }
 
+    /// <summary>
+    /// Implements the IDisposable pattern to clean up resources.
+    /// </summary>
     public void Dispose()
     {
         Stop();

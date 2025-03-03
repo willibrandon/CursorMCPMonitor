@@ -2,11 +2,22 @@ using System.Text.RegularExpressions;
 
 namespace CursorMCPMonitor.Tests;
 
+/// <summary>
+/// Tests for log line parsing functionality to ensure correct pattern matching and data extraction.
+/// </summary>
 public partial class LogParsingTests
 {
     [GeneratedRegex(@"^(?<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) \[(?<level>\w+)\]\s+(?<clientId>\w+):\s+(?<message>.*)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
     private static partial Regex LogLineRegex();
 
+    /// <summary>
+    /// Tests that valid log lines are correctly parsed with the expected timestamp, level, client ID, and message.
+    /// </summary>
+    /// <param name="input">The log line to parse.</param>
+    /// <param name="expectedTimestamp">Expected timestamp from the log line.</param>
+    /// <param name="expectedLevel">Expected log level (info, error, warning).</param>
+    /// <param name="expectedClientId">Expected client identifier.</param>
+    /// <param name="expectedMessage">Expected message content.</param>
     [Theory]
     [InlineData(
         "2024-03-02 12:26:34.698 [info] a602: Handling CreateClient action",

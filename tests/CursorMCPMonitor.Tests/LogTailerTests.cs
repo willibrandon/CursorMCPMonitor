@@ -1,11 +1,18 @@
 namespace CursorMCPMonitor.Tests;
 
+/// <summary>
+/// Tests for the LogTailer class to verify log file monitoring functionality.
+/// </summary>
 public class LogTailerTests : IDisposable
 {
     private readonly string _testFilePath;
     private readonly List<(string FilePath, string Line)> _receivedLines = [];
     private static readonly string[] _testLines = ["Line 1", "Line 2"];
 
+    /// <summary>
+    /// Initializes a new instance of the LogTailerTests class.
+    /// Sets up a temporary test file path for each test.
+    /// </summary>
     public LogTailerTests()
     {
         _testFilePath = Path.Combine(Path.GetTempPath(), $"test_log_{Guid.NewGuid()}.log");
@@ -83,6 +90,9 @@ public class LogTailerTests : IDisposable
         _receivedLines.Add((filePath, line));
     }
 
+    /// <summary>
+    /// Cleans up test resources by deleting the temporary test file.
+    /// </summary>
     public void Dispose()
     {
         try
@@ -96,7 +106,6 @@ public class LogTailerTests : IDisposable
         {
             // Ignore cleanup errors
         }
-
         GC.SuppressFinalize(this);
     }
 } 

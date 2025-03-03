@@ -2,8 +2,14 @@ using Microsoft.Extensions.Configuration;
 
 namespace CursorMCPMonitor.Tests;
 
+/// <summary>
+/// Tests for configuration handling to ensure proper loading and fallback of settings.
+/// </summary>
 public class ConfigurationTests
 {
+    /// <summary>
+    /// Verifies that the default logs path is used when no configuration is provided.
+    /// </summary>
     [Fact]
     public void Should_Use_Default_Logs_Path_When_Not_Configured()
     {
@@ -28,6 +34,9 @@ public class ConfigurationTests
         ));
     }
 
+    /// <summary>
+    /// Verifies that a custom logs path is used when provided in configuration.
+    /// </summary>
     [Fact]
     public void Should_Use_Configured_Logs_Path()
     {
@@ -52,6 +61,9 @@ public class ConfigurationTests
         logsRoot.Should().Be(customPath);
     }
 
+    /// <summary>
+    /// Verifies that the default poll interval is used when no configuration is provided.
+    /// </summary>
     [Fact]
     public void Should_Use_Default_Poll_Interval_When_Not_Configured()
     {
@@ -67,6 +79,10 @@ public class ConfigurationTests
         pollInterval.Should().Be(1000);
     }
 
+    /// <summary>
+    /// Verifies that custom poll intervals are correctly applied from configuration.
+    /// </summary>
+    /// <param name="interval">The poll interval in milliseconds to test.</param>
     [Theory]
     [InlineData(500)]
     [InlineData(2000)]

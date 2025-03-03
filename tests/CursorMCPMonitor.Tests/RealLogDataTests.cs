@@ -1,11 +1,18 @@
 namespace CursorMCPMonitor.Tests;
 
+/// <summary>
+/// Integration tests using real log data to verify the log monitoring system's behavior.
+/// </summary>
 public class RealLogDataTests : IDisposable
 {
     private readonly string _testFilePath;
     private readonly List<(string FilePath, string Line)> _receivedLines = [];
     private readonly string _sourceLogFile;
 
+    /// <summary>
+    /// Initializes a new instance of the RealLogDataTests class.
+    /// Sets up test paths and initializes the test environment.
+    /// </summary>
     public RealLogDataTests()
     {
         _testFilePath = Path.Combine(Path.GetTempPath(), $"test_log_{Guid.NewGuid()}.log");
@@ -117,6 +124,9 @@ public class RealLogDataTests : IDisposable
         _receivedLines.Add((filePath, line));
     }
 
+    /// <summary>
+    /// Cleans up test resources by deleting the temporary test file.
+    /// </summary>
     public void Dispose()
     {
         try
@@ -130,7 +140,6 @@ public class RealLogDataTests : IDisposable
         {
             // Ignore cleanup errors
         }
-
         GC.SuppressFinalize(this);
     }
 } 
