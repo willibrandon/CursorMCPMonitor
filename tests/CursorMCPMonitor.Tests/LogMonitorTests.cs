@@ -128,8 +128,11 @@ public class LogMonitorTests
             var newSubDir = Path.Combine(rootDir, "window1", "exthost", "anysphere.cursor-always-local");
             Directory.CreateDirectory(newSubDir);
 
+            // Give the file system watcher time to process
+            Thread.Sleep(500);
+
             // Assert
-            _consoleOutputMock.Verify(x => x.WriteSuccess("Subdirectory:", It.Is<string>(s => s.Contains(rootDir))), Times.Once);
+            _consoleOutputMock.Verify(x => x.WriteSuccess("Subdirectory:", $"Monitoring {Path.Combine(rootDir, "window1")}"), Times.Once);
         }
         finally
         {
