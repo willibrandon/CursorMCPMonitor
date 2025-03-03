@@ -38,20 +38,26 @@ public class CommandLineOptions
             aliases: new[] { "--log-pattern", "-f" },
             description: "Log file pattern to monitor");
             
+        var filterOption = new Option<string>(
+            aliases: new[] { "--filter" },
+            description: "Filter log messages containing specific text");
+            
         // Add options to root command
         rootCommand.AddOption(logsRootOption);
         rootCommand.AddOption(pollIntervalOption);
         rootCommand.AddOption(verbosityOption);
         rootCommand.AddOption(logPatternOption);
+        rootCommand.AddOption(filterOption);
         
         // Set handler
-        rootCommand.Handler = CommandHandler.Create<string?, int?, string?, string?>(
-            (logsRoot, pollInterval, verbosity, logPattern) => 
+        rootCommand.Handler = CommandHandler.Create<string?, int?, string?, string?, string?>(
+            (logsRoot, pollInterval, verbosity, logPattern, filter) => 
             {
                 if (logsRoot != null) options["LogsRoot"] = logsRoot;
                 if (pollInterval != null) options["PollIntervalMs"] = pollInterval.ToString();
-                if (verbosity != null) options["Logging:LogLevel:Default"] = verbosity;
+                if (verbosity != null) options["Verbosity"] = verbosity;
                 if (logPattern != null) options["LogPattern"] = logPattern;
+                if (filter != null) options["Filter"] = filter;
                 
                 return 0;
             });

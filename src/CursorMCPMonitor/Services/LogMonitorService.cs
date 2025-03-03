@@ -1,6 +1,7 @@
 using CursorMCPMonitor.Configuration;
 using CursorMCPMonitor.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace CursorMCPMonitor.Services;
 
@@ -118,17 +119,15 @@ public class LogMonitorService : ILogMonitorService
     /// </summary>
     private void OnSubdirectoryFileCreated(string rootSubDir, FileSystemEventArgs e, AppConfig appConfig)
     {
-        if (!File.Exists(e.FullPath))
+        if (!e.FullPath.Contains("exthost") || !e.FullPath.Contains("anysphere.cursor-always-local"))
         {
-            _logger.LogDebug("File creation event triggered but file does not exist: {FilePath}", e.FullPath);
             return;
         }
 
         var relative = Path.GetRelativePath(rootSubDir, e.FullPath);
-        // Use more flexible pattern matching based on appConfig.LogPattern
+        // Use glob pattern matching for more flexible log file detection
         if (relative.Replace('\\', '/').Contains("/window") && 
-            relative.Replace('\\', '/').EndsWith($"exthost/anysphere.cursor-always-local/{appConfig.LogPattern}",
-            StringComparison.OrdinalIgnoreCase))
+            MatchesLogPattern(e.FullPath, appConfig.LogPattern))
         {
             _logger.LogInformation("Detected new Cursor MCP log file: {FilePath}", e.FullPath);
             StartTailer(e.FullPath, appConfig);
@@ -136,6 +135,50 @@ public class LogMonitorService : ILogMonitorService
         else
         {
             _logger.LogDebug("File created but does not match log pattern: {FilePath}", e.FullPath);
+        }
+    }
+
+    /// <summary>
+    /// Determines if a file path matches the configured log pattern using glob matching
+    /// </summary>
+    private bool MatchesLogPattern(string filePath, string pattern)
+    {
+        // First check the basic path structure is correct
+        if (!filePath.Contains("exthost") || !filePath.Contains("anysphere.cursor-always-local"))
+        {
+            return false;
+        }
+
+        // Get just the filename to match against the pattern
+        var fileName = Path.GetFileName(filePath);
+        
+        // Simple pattern matching for exact match
+        if (pattern == fileName)
+        {
+            return true;
+        }
+        
+        // For pattern matching with wildcards, use a safer approach that doesn't 
+        // rely on empty root directory
+        try
+        {
+            // Create a matcher that uses the pattern
+            var matcher = new Matcher();
+            matcher.AddInclude(pattern);
+            
+            // Use temporary directory as root for matching
+            var tempDir = Path.GetTempPath();
+            
+            // Match the filename against the pattern
+            var matchResult = matcher.Match(tempDir, new[] { fileName });
+            return matchResult.HasMatches;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error matching log pattern {Pattern} against {FilePath}", pattern, filePath);
+            
+            // Fallback to simple contains check if pattern matching fails
+            return fileName.Contains(pattern.Replace("*", ""), StringComparison.OrdinalIgnoreCase);
         }
     }
 
@@ -150,12 +193,18 @@ public class LogMonitorService : ILogMonitorService
         foreach (var windowDir in Directory.GetDirectories(subDirPath, "window*"))
         {
             var exthostPath = Path.Combine(windowDir, "exthost", "anysphere.cursor-always-local");
-            var logFile = Path.Combine(exthostPath, appConfig.LogPattern);
             
-            if (File.Exists(logFile))
+            if (Directory.Exists(exthostPath))
             {
-                _logger.LogInformation("Found existing log file: {LogFile}", logFile);
-                StartTailer(logFile, appConfig);
+                // Use glob pattern matching to find matching log files
+                foreach (var file in Directory.GetFiles(exthostPath))
+                {
+                    if (MatchesLogPattern(file, appConfig.LogPattern))
+                    {
+                        _logger.LogInformation("Found existing log file: {LogFile}", file);
+                        StartTailer(file, appConfig);
+                    }
+                }
             }
         }
     }

@@ -43,9 +43,11 @@ The application can be configured through `appsettings.json`:
   "LogsRoot": null,
   "PollIntervalMs": 1000,
   "LogPattern": "Cursor MCP.log",
+  "Verbosity": "Debug",
+  "Filter": null,
   "Serilog": {
     "MinimumLevel": {
-      "Default": "Information",
+      "Default": "Debug",
       "Override": {
         "Microsoft": "Warning",
         "System": "Warning"
@@ -58,7 +60,7 @@ The application can be configured through `appsettings.json`:
   },
   "Logging": {
     "LogLevel": {
-      "Default": "Information",
+      "Default": "Debug",
       "Microsoft": "Warning"
     }
   }
@@ -70,8 +72,9 @@ The application can be configured through `appsettings.json`:
   - macOS: `~/Library/Application Support/Cursor/logs`
   - Linux: `~/.config/Cursor/logs`
 - `PollIntervalMs`: How often to check for new log lines (in milliseconds)
-- `LogPattern`: The log file pattern to monitor (defaults to "Cursor MCP.log")
-- `Logging:LogLevel:Default`: The verbosity level (Information, Debug, Warning, Error)
+- `LogPattern`: The log file pattern to monitor (supports glob patterns like "Cursor MCP*.log")
+- `Verbosity`: The verbosity level (Debug, Information, Warning, Error). Defaults to Debug to show all messages.
+- `Filter`: Optional text pattern to filter log content (only lines containing this text will be displayed)
 - `Serilog`: Configuration for structured logging (see [Serilog configuration](#serilog-configuration))
 
 You can also override settings using environment variables:
@@ -99,25 +102,26 @@ By default, logs are written to:
 
 ## Command-Line Options
 
-The application supports the following command-line options:
+You can override configuration settings using command-line options:
 
-```
---logs-root, -l     Root directory containing Cursor logs
---poll-interval, -p Polling interval in milliseconds
---verbosity, -v     Log verbosity level (debug, info, warning, error)
---log-pattern, -f   Log file pattern to monitor
-```
-
-Examples:
 ```bash
-# Monitor logs with 500ms polling interval
+# Specify a custom logs directory
+dotnet run -- --logs-root "C:\Users\username\AppData\Roaming\Cursor\logs"
+
+# Set a custom polling interval (500ms)
 dotnet run -- --poll-interval 500
 
-# Monitor logs in a custom directory with higher verbosity
-dotnet run -- --logs-root "C:\CustomPath\Cursor\logs" --verbosity debug
+# Use a different log pattern (glob pattern support)
+dotnet run -- --log-pattern "Cursor MCP*.log"
 
-# Monitor a different log file pattern
-dotnet run -- --log-pattern "Cursor*.log"
+# Set verbosity level
+dotnet run -- --verbosity debug
+
+# Filter logs to only show lines containing specific text
+dotnet run -- --filter "CreateClient"
+
+# Combine multiple options
+dotnet run -- --logs-root "/path/to/logs" --poll-interval 500 --verbosity error --filter "Error in MCP"
 ```
 
 ## Building and Running

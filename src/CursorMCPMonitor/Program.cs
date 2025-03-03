@@ -40,23 +40,31 @@ public class Program
             var appConfig = AppConfig.Load(config);
             var logger = host.Services.GetRequiredService<ILogger<Program>>();
             var consoleOutput = host.Services.GetRequiredService<IConsoleOutputService>();
-            var logMonitor = host.Services.GetRequiredService<ILogMonitorService>();
+            var logMonitorService = host.Services.GetRequiredService<ILogMonitorService>();
 
             Console.OutputEncoding = Encoding.UTF8;
             consoleOutput.WriteHighlight("===", "Cursor AI MCP Log Monitor ===");
-            consoleOutput.WriteInfo("Configuration:", $"Verbosity level: {appConfig.Verbosity}");
-            consoleOutput.WriteInfo("Configuration:", $"Poll interval: {appConfig.PollIntervalMs}ms");
+            consoleOutput.WriteInfo("Configuration:", $"Logs root: {appConfig.LogsRoot}");
+            consoleOutput.WriteInfo("Configuration:", $"Polling interval: {appConfig.PollIntervalMs}ms");
             consoleOutput.WriteInfo("Configuration:", $"Log file pattern: {appConfig.LogPattern}");
+            consoleOutput.WriteInfo("Configuration:", $"Verbosity level: {appConfig.Verbosity}");
 
-            // Get the logs root directory from configuration
-            var logsRoot = string.IsNullOrEmpty(appConfig.LogsRoot)
-                ? AppConfig.GetDefaultLogsDirectory()
-                : appConfig.LogsRoot;
-                
-            logger.LogInformation("Using logs root directory: {LogsRoot}", logsRoot);
-
-            // Start monitoring the logs directory
-            logMonitor.StartMonitoring(logsRoot, appConfig);
+            // Get services and configure them
+            var logProcessorService = host.Services.GetRequiredService<ILogProcessorService>();
+            
+            // Apply filter and verbosity settings
+            if (config["Filter"] != null)
+            {
+                string filter = config["Filter"]!;
+                consoleOutput.WriteInfo("Configuration:", $"Log filter: {filter}");
+                logProcessorService.SetFilter(filter);
+            }
+            
+            // Apply verbosity level
+            logProcessorService.SetVerbosityLevel(appConfig.Verbosity);
+            
+            // Start monitoring
+            logMonitorService.StartMonitoring(appConfig.LogsRoot!, appConfig);
             
             // Keep the application running
             await host.RunAsync();

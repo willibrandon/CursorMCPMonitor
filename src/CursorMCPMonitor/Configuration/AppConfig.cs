@@ -18,14 +18,21 @@ public class AppConfig
     public int PollIntervalMs { get; set; } = 1000;
     
     /// <summary>
-    /// Pattern for log files to monitor.
+    /// The pattern to match log files against.
+    /// Supports glob patterns like "Cursor MCP*.log"
     /// </summary>
     public string LogPattern { get; set; } = "Cursor MCP.log";
     
     /// <summary>
-    /// Logging verbosity level.
+    /// The verbosity level for log output.
     /// </summary>
-    public string Verbosity { get; set; } = "Information";
+    public string Verbosity { get; set; } = "Debug";
+    
+    /// <summary>
+    /// Optional text pattern to filter log content.
+    /// Only lines containing this text will be displayed.
+    /// </summary>
+    public string? Filter { get; set; }
     
     /// <summary>
     /// Gets the default logs directory for Cursor.

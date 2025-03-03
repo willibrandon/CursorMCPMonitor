@@ -13,6 +13,8 @@ public partial class LogProcessorService : ILogProcessorService
 {
     private readonly IConsoleOutputService _consoleOutput;
     private readonly ILogger<LogProcessorService> _logger;
+    private string? _filterPattern;
+    private LogLevel _verbosityLevel = LogLevel.Debug;
 
     // Regex to parse lines of the form:
     // 2025-03-02 12:26:34.698 [info] a602: Handling CreateClient action
@@ -28,6 +30,56 @@ public partial class LogProcessorService : ILogProcessorService
     }
 
     /// <summary>
+    /// Sets or updates the filter pattern to be applied to log output
+    /// </summary>
+    /// <param name="filterPattern">Text pattern to filter logs (can be null to disable filtering)</param>
+    public void SetFilter(string? filterPattern)
+    {
+        _filterPattern = filterPattern;
+        _logger.LogInformation("Log filter set to: {FilterPattern}", filterPattern ?? "(none)");
+    }
+
+    /// <summary>
+    /// Sets the minimum verbosity level to display
+    /// </summary>
+    /// <param name="level">Minimum log level to display (Debug, Info, Warning, Error)</param>
+    public void SetVerbosityLevel(string level)
+    {
+        _verbosityLevel = ParseLogLevel(level);
+        _logger.LogInformation("Log verbosity set to: {Level}", _verbosityLevel);
+    }
+
+    /// <summary>
+    /// Parses a log level string to the corresponding LogLevel enum value
+    /// </summary>
+    private LogLevel ParseLogLevel(string level)
+    {
+        return level?.ToLower() switch
+        {
+            "debug" => LogLevel.Debug,
+            "information" or "info" => LogLevel.Information,
+            "warning" or "warn" => LogLevel.Warning,
+            "error" or "err" => LogLevel.Error,
+            _ => LogLevel.Information
+        };
+    }
+
+    /// <summary>
+    /// Converts a log level string from the log file to the corresponding LogLevel enum value
+    /// </summary>
+    private LogLevel ConvertLogLevel(string level)
+    {
+        return level?.ToLower() switch
+        {
+            "debug" => LogLevel.Debug,
+            "info" => LogLevel.Information,
+            "warning" or "warn" => LogLevel.Warning,
+            "error" or "err" => LogLevel.Error,
+            _ => LogLevel.Information
+        };
+    }
+
+    /// <summary>
     /// Processes a line from a log file, parsing it and directing it to the appropriate output.
     /// </summary>
     /// <param name="fullFilePath">The full path to the log file</param>
@@ -36,6 +88,13 @@ public partial class LogProcessorService : ILogProcessorService
     {
         if (string.IsNullOrWhiteSpace(line))
             return;
+
+        // Apply filter if one is set
+        if (!string.IsNullOrEmpty(_filterPattern) && 
+            !line.Contains(_filterPattern, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
 
         var match = LogLineRegex().Match(line);
         if (!match.Success)
@@ -48,6 +107,15 @@ public partial class LogProcessorService : ILogProcessorService
         var level = match.Groups["level"].Value;
         var clientId = match.Groups["clientId"].Value;
         var message = match.Groups["message"].Value;
+
+        // Apply verbosity filter for structured logs
+        var logLevel = ConvertLogLevel(level);
+        if (_verbosityLevel != LogLevel.Debug && logLevel < _verbosityLevel)
+        {
+            // When Debug is selected, show everything
+            // For other levels, filter according to severity (but with correct logic)
+            return;
+        }
 
         _logger.LogDebug("Processing log line from {LogFile}: {Timestamp} [{Level}] {ClientId}: {Message}", 
             Path.GetFileName(fullFilePath), timestamp, level, clientId, message);
