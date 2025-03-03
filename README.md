@@ -28,6 +28,11 @@ The Model Context Protocol (MCP) is an open protocol that standardizes how appli
 - Smart error handling with exponential backoff and retry logic
 - Configurable polling interval and log file patterns
 - Command-line interface for easy customization
+- **Structured logging** with Serilog for improved observability:
+  - Console logging with formatted output
+  - File logging with daily rotation
+  - Contextual properties (machine name, thread ID, etc.)
+  - Log level filtering and output customization
 
 ## Configuration
 
@@ -38,6 +43,19 @@ The application can be configured through `appsettings.json`:
   "LogsRoot": null,
   "PollIntervalMs": 1000,
   "LogPattern": "Cursor MCP.log",
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Warning",
+        "System": "Warning"
+      }
+    },
+    "Enrich": [ "FromLogContext", "WithMachineName", "WithThreadId" ],
+    "Properties": {
+      "Application": "CursorMCPMonitor"
+    }
+  },
   "Logging": {
     "LogLevel": {
       "Default": "Information",
@@ -54,6 +72,7 @@ The application can be configured through `appsettings.json`:
 - `PollIntervalMs`: How often to check for new log lines (in milliseconds)
 - `LogPattern`: The log file pattern to monitor (defaults to "Cursor MCP.log")
 - `Logging:LogLevel:Default`: The verbosity level (Information, Debug, Warning, Error)
+- `Serilog`: Configuration for structured logging (see [Serilog configuration](#serilog-configuration))
 
 You can also override settings using environment variables:
 ```bash
@@ -64,6 +83,19 @@ set PollIntervalMs=500
 export LogsRoot=/custom/path/cursor/logs
 export PollIntervalMs=500
 ```
+
+### Serilog Configuration
+
+The application uses Serilog for structured logging, which can be configured in the `appsettings.json` file:
+
+- `Serilog:MinimumLevel:Default`: The default minimum log level
+- `Serilog:MinimumLevel:Override`: Override minimum log levels for specific namespaces
+- `Serilog:Enrich`: Enrichers to add contextual information to logs
+- `Serilog:Properties`: Custom properties to include in all log events
+
+By default, logs are written to:
+- Console: Formatted for human readability
+- Files: Stored in the `logs` directory with daily rotation as `cursormonitor-YYYYMMDD.log`
 
 ## Command-Line Options
 
@@ -115,6 +147,26 @@ docker build -t cursor-mcp-monitor .
 docker run -it --rm cursor-mcp-monitor
 ```
 
+## Logging and Observability
+
+The application implements structured logging using Serilog, which provides several benefits:
+
+- **Contextual Information**: Each log entry includes contextual properties like machine name, thread ID, and source context
+- **Multiple Output Formats**: Logs are written to both console and files in formatted output
+- **Log Levels**: Different log levels (Debug, Information, Warning, Error, Fatal) help filter the most relevant information
+- **Structured Data**: Log events include structured data that can be queried and analyzed
+- **Log Files**: Log files are stored in the application's `logs` directory with daily rotation
+
+Example log format (console):
+```
+[2025-03-03 12:34:56.789] [INF] [CursorMCPMonitor.Services.LogProcessorService] CreateClient detected: Cursor MCP.log 2025-03-03 12:34:56.123 [info] a602: Handling CreateClient action
+```
+
+Example log format (file):
+```
+2025-03-03 12:34:56.789 +00:00 [INF] [CursorMCPMonitor.Services.LogProcessorService] CreateClient detected: Cursor MCP.log 2025-03-03 12:34:56.123 [info] a602: Handling CreateClient action
+```
+
 ## Error Handling
 
 The application includes advanced error handling:
@@ -123,6 +175,7 @@ The application includes advanced error handling:
 - Automatic recovery from transient issues
 - Detailed error reporting with color-coded console output
 - File rotation and truncation detection
+- Structured error logging with contextual information
 
 ## Use Cases
 
@@ -131,6 +184,7 @@ The application includes advanced error handling:
 - Track client lifecycle and connection states
 - Monitor server capabilities and offerings
 - Verify correct protocol implementation
+- Track application performance and error rates through structured logs
 
 ## License
 
