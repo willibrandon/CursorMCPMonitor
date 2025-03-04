@@ -3,66 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cursor MCP Monitor</title>
+    <title>MCP Monitor</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        :root {
+            /* Tokyo Night theme colors */
+            --bg: #1a1b26;
+            --bg-highlight: #1f2335;
+            --text: #a9b1d6;
+            --dim: #565f89;
+            --success: #9ece6a;
+            --error: #f7768e;
+            --info: #7aa2f7;
+            --warning: #e0af68;
+            --purple: #bb9af7;
+            --cyan: #7dcfff;
+            --magenta: #bb9af7;
+        }
+
+        * {
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: ui-monospace, 'SF Mono', 'Cascadia Code', 'Segoe UI Mono', 'Ubuntu Mono', Menlo, Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            padding: 1rem;
+            height: 100vh;
+            overflow: hidden;
         }
-        h1 {
-            color: #333;
-            margin-top: 0;
-        }
-        #status {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-        }
-        .connected {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .disconnected {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-        #log {
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 4px;
-            height: 300px;
+
+        #terminal {
+            height: calc(100vh - 2rem);
             overflow-y: auto;
-            font-family: monospace;
-            margin-top: 10px;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
-        .log-entry {
-            margin: 5px 0;
-            padding: 5px;
-            border-bottom: 1px solid #eee;
+
+        .line {
+            padding: 0.125rem 0;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .line:hover {
+            background: var(--bg-highlight);
+        }
+
+        .timestamp {
+            color: var(--dim);
+            min-width: 12ch;
+        }
+
+        .client-id {
+            color: var(--cyan);
+            min-width: 10ch;
+        }
+
+        .type {
+            min-width: 12ch;
+            font-weight: 600;
+        }
+
+        .message {
+            flex: 1;
+            color: var(--text);
+        }
+
+        /* Event type colors */
+        .create { color: var(--success); }
+        .list { color: var(--info); }
+        .error { color: var(--error); }
+        .close { color: var(--dim); }
+        .connect { color: var(--purple); }
+        .warning { color: var(--warning); }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--dim);
+            border: 3px solid var(--bg);
+            border-radius: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text);
+        }
+
+        /* Selection colors */
+        ::selection {
+            background: var(--dim);
+            color: var(--text);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Cursor MCP Monitor</h1>
-        <div id="status" class="disconnected">Disconnected</div>
-        <div id="log"></div>
-    </div>
+    <div id="terminal"></div>
 
     <script>
-        const statusDiv = document.getElementById('status');
-        const logDiv = document.getElementById('log');
+        const terminal = document.getElementById('terminal');
         let ws;
+
+        function formatTime(date) {
+            return date.toTimeString().split(' ')[0] + '.' + 
+                   date.getMilliseconds().toString().padStart(3, '0');
+        }
+
+        function addLine(data) {
+            const now = new Date();
+            const line = document.createElement('div');
+            line.className = 'line';
+            
+            if (typeof data === 'string') {
+                line.innerHTML = `<span class="timestamp">${formatTime(now)}</span><span class="message">${data}</span>`;
+            } else {
+                const type = data.Type || 'Unknown';
+                const clientId = data.ClientId || '-';
+                const message = data.Message || '';
+                
+                let displayType = type;
+                let typeClass = type.toLowerCase();
+                
+                switch(type) {
+                    case 'CreateClient':
+                        displayType = 'CREATE';
+                        typeClass = 'create';
+                        break;
+                    case 'ListOfferings':
+                        displayType = 'LIST';
+                        typeClass = 'list';
+                        break;
+                    case 'MCPError':
+                        displayType = 'ERROR';
+                        typeClass = 'error';
+                        break;
+                    case 'ClientClosed':
+                        displayType = 'CLOSE';
+                        typeClass = 'close';
+                        break;
+                    case 'Connected':
+                        displayType = 'CONNECT';
+                        typeClass = 'connect';
+                        break;
+                    case 'GenericError':
+                        displayType = 'ERROR';
+                        typeClass = 'error';
+                        break;
+                    case 'NoServerInfo':
+                        displayType = 'WARNING';
+                        typeClass = 'warning';
+                        break;
+                    case 'UnrecognizedKeys':
+                        displayType = 'WARNING';
+                        typeClass = 'warning';
+                        break;
+                }
+
+                line.innerHTML = `
+                    <span class="timestamp">${formatTime(now)}</span>
+                    <span class="client-id">${clientId}</span>
+                    <span class="type ${typeClass}">${displayType}</span>
+                    <span class="message">${message}</span>
+                `;
+            }
+            
+            terminal.insertBefore(line, terminal.firstChild);
+        }
 
         function connect() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -71,42 +188,28 @@
             ws = new WebSocket(wsUrl);
 
             ws.onopen = () => {
-                statusDiv.textContent = 'Connected';
-                statusDiv.className = 'connected';
-                addLogEntry('WebSocket connection established');
+                addLine('Connected to MCP Monitor');
             };
 
             ws.onclose = () => {
-                statusDiv.textContent = 'Disconnected';
-                statusDiv.className = 'disconnected';
-                addLogEntry('WebSocket connection closed');
-                
-                // Try to reconnect after 5 seconds
+                addLine('Disconnected from MCP Monitor. Reconnecting...');
                 setTimeout(connect, 5000);
             };
 
             ws.onerror = (error) => {
-                addLogEntry('WebSocket error: ' + error);
+                addLine('WebSocket error: ' + error);
             };
 
             ws.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    addLogEntry(JSON.stringify(data, null, 2));
+                    addLine(data);
                 } catch (e) {
-                    addLogEntry('Received: ' + event.data);
+                    addLine(event.data);
                 }
             };
         }
 
-        function addLogEntry(message) {
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            entry.textContent = `[${new Date().toISOString()}] ${message}`;
-            logDiv.insertBefore(entry, logDiv.firstChild);
-        }
-
-        // Start connection
         connect();
     </script>
 </body>
