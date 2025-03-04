@@ -36,7 +36,7 @@ The Model Context Protocol (MCP) is an open protocol that standardizes how appli
 
 ## Interactive Dashboard
 
-The application includes a web-based dashboard for monitoring and analysis. The dashboard features real-time event streaming through WebSocket connections with automatic reconnection handling and event rate monitoring.
+The application includes a web-based dashboard for monitoring and analysis, accessible at `http://localhost:5050` when the application is running. The dashboard features real-time event streaming through WebSocket connections with automatic reconnection handling and event rate monitoring.
 
 The terminal display shows timestamps with millisecond precision and color-coded message types for easy identification of different event types. Advanced search functionality includes text-based search with highlighting and keyboard shortcut support.
 
