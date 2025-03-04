@@ -108,21 +108,37 @@ public class WebSocketService : IDisposable
 
     public void Dispose()
     {
-        _cancellationTokenSource.Cancel();
-        _cancellationTokenSource.Dispose();
-        
-        // Close all WebSocket connections
-        foreach (var client in _clients.Values)
+        try
         {
-            if (client.State == WebSocketState.Open)
+            if (!_cancellationTokenSource.IsCancellationRequested)
             {
-                client.CloseAsync(
-                    WebSocketCloseStatus.NormalClosure,
-                    "Server shutting down",
-                    CancellationToken.None).Wait();
+                _cancellationTokenSource.Cancel();
             }
-            client.Dispose();
+            
+            // Close all WebSocket connections
+            foreach (var client in _clients.Values)
+            {
+                try
+                {
+                    if (client.State == WebSocketState.Open)
+                    {
+                        client.CloseOutputAsync(
+                            WebSocketCloseStatus.NormalClosure,
+                            "Server shutting down",
+                            CancellationToken.None).Wait(1000);
+                    }
+                }
+                catch { }
+                finally
+                {
+                    client.Dispose();
+                }
+            }
+            _clients.Clear();
         }
-        _clients.Clear();
+        finally
+        {
+            _cancellationTokenSource.Dispose();
+        }
     }
 } 

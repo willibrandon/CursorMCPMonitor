@@ -94,6 +94,14 @@ public class Program
             var logMonitorService = app.Services.GetRequiredService<ILogMonitorService>();
             var webSocketService = app.Services.GetRequiredService<WebSocketService>();
 
+            // Setup graceful shutdown
+            var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+            lifetime.ApplicationStopping.Register(() =>
+            {
+                logMonitorService.Dispose();
+                webSocketService.Dispose();
+            });
+
             Console.OutputEncoding = Encoding.UTF8;
             consoleOutput.WriteHighlight("===", "Cursor AI MCP Log Monitor ===");
             consoleOutput.WriteInfo("Configuration:", $"Logs root: {appConfig.LogsRoot}");
@@ -144,7 +152,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Log.Fatal(ex, "Host terminated unexpectedly");
+            Log.Fatal(ex, "Application terminated unexpectedly");
         }
         finally
         {
