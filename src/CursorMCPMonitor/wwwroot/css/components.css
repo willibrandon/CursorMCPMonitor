@@ -138,4 +138,67 @@
 
 #terminal {
     padding-top: 2rem;
+}
+
+/* Command Palette */
+#command-palette {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 500px;
+    background: var(--bg);
+    border: 1px solid var(--dim);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    display: none;
+    flex-direction: column;
+    z-index: 1100;
+}
+
+#command-palette.visible {
+    display: flex;
+}
+
+#command-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--bg-highlight);
+    border: none;
+    border-bottom: 1px solid var(--dim);
+    color: var(--text);
+    font-family: inherit;
+    font-size: inherit;
+    outline: none;
+}
+
+#command-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.command-item {
+    padding: 0.5rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.command-item:hover,
+.command-item.selected {
+    background: var(--bg-highlight);
+}
+
+.command-title {
+    color: var(--text);
+}
+
+.command-shortcut {
+    color: var(--dim);
+    font-size: 11px;
+    padding: 0.125rem 0.375rem;
+    background: var(--bg-highlight);
+    border-radius: 2px;
+    border: 1px solid var(--dim);
 } 

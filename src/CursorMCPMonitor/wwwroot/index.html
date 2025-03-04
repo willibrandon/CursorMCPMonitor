@@ -13,6 +13,27 @@
         <input type="text" id="search-input" placeholder="Search logs... (/ to search, Esc to close)">
         <span id="search-count"></span>
     </div>
+    <div id="command-palette">
+        <input type="text" id="command-input" placeholder="Type a command... (Esc to close)">
+        <div id="command-list">
+            <div class="command-item" data-command="clear">
+                <div class="command-title">Clear Logs</div>
+                <div class="command-shortcut">Ctrl+K</div>
+            </div>
+            <div class="command-item" data-command="copy">
+                <div class="command-title">Copy Visible Entries</div>
+                <div class="command-shortcut">Ctrl+C</div>
+            </div>
+            <div class="command-item" data-command="autoscroll">
+                <div class="command-title">Toggle Auto-scroll</div>
+                <div class="command-shortcut">Ctrl+S</div>
+            </div>
+            <div class="command-item" data-command="search">
+                <div class="command-title">Focus Search</div>
+                <div class="command-shortcut">/</div>
+            </div>
+        </div>
+    </div>
     <div id="status-indicators">
         <div class="status-item">
             <span class="status-dot" id="ws-status"></span>
@@ -34,6 +55,7 @@
     <script src="js/websocket.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/search.js"></script>
+    <script src="js/command-palette.js"></script>
     <script>
         // Initialize WebSocket connection
         window.wsConnect();
