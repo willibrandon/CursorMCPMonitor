@@ -78,9 +78,9 @@ public class Program
             
             // Add services
             builder.Services.AddSingleton<IConsoleOutputService, ConsoleOutputService>();
+            builder.Services.AddSingleton<IWebSocketService, WebSocketService>();
             builder.Services.AddSingleton<ILogProcessorService, LogProcessorService>();
             builder.Services.AddSingleton<ILogMonitorService, LogMonitorService>();
-            builder.Services.AddSingleton<WebSocketService>();
 
             // Configure logging
             builder.Logging.ClearProviders();

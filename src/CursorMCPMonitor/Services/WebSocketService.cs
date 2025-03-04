@@ -3,13 +3,14 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using CursorMCPMonitor.Interfaces;
 
 namespace CursorMCPMonitor.Services;
 
 /// <summary>
 /// Service for managing WebSocket connections and broadcasting messages to connected clients.
 /// </summary>
-public class WebSocketService : IDisposable
+public class WebSocketService : IWebSocketService
 {
     private readonly ConcurrentDictionary<string, WebSocket> _clients = new();
     private readonly ILogger<WebSocketService> _logger;

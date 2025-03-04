@@ -2,6 +2,7 @@ using CursorMCPMonitor.Configuration;
 using CursorMCPMonitor.Interfaces;
 using CursorMCPMonitor.Services;
 using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace CursorMCPMonitor.Tests;
 
@@ -9,7 +10,7 @@ public class LogProcessorTests
 {
     private readonly Mock<ILogger<LogProcessorService>> _loggerMock;
     private readonly Mock<IConsoleOutputService> _consoleOutputMock;
-    private readonly Mock<WebSocketService> _webSocketServiceMock;
+    private readonly Mock<IWebSocketService> _webSocketServiceMock;
     private readonly LogProcessorService _processor;
     private readonly AppConfig _config;
     private readonly string _testFilePath = "test.log";
@@ -18,7 +19,7 @@ public class LogProcessorTests
     {
         _loggerMock = new Mock<ILogger<LogProcessorService>>();
         _consoleOutputMock = new Mock<IConsoleOutputService>();
-        _webSocketServiceMock = new Mock<WebSocketService>();
+        _webSocketServiceMock = new Mock<IWebSocketService>();
         _config = new AppConfig
         {
             Verbosity = "info",

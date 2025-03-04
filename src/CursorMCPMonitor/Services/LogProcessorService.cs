@@ -1,6 +1,6 @@
+using System.Text.RegularExpressions;
 using CursorMCPMonitor.Interfaces;
 using Microsoft.Extensions.Logging;
-using System.Text.RegularExpressions;
 
 namespace CursorMCPMonitor.Services;
 
@@ -12,7 +12,7 @@ public partial class LogProcessorService : ILogProcessorService
 {
     private readonly IConsoleOutputService _consoleOutput;
     private readonly ILogger<LogProcessorService> _logger;
-    private readonly WebSocketService _webSocketService;
+    private readonly IWebSocketService _webSocketService;
     private string? _filterPattern;
     private LogLevel _verbosityLevel = LogLevel.Debug;
 
@@ -24,7 +24,7 @@ public partial class LogProcessorService : ILogProcessorService
     public LogProcessorService(
         IConsoleOutputService consoleOutput,
         ILogger<LogProcessorService> logger,
-        WebSocketService webSocketService)
+        IWebSocketService webSocketService)
     {
         _consoleOutput = consoleOutput;
         _logger = logger;
