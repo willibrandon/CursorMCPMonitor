@@ -36,41 +36,17 @@ The Model Context Protocol (MCP) is an open protocol that standardizes how appli
 
 ## Interactive Dashboard
 
-The application includes a web-based dashboard for monitoring and analysis:
+The application includes a web-based dashboard for monitoring and analysis. The dashboard features real-time event streaming through WebSocket connections with automatic reconnection handling and event rate monitoring.
 
-- **Real-time Event Streaming**:
-  - WebSocket-based updates
-  - Automatic reconnection handling
-  - Event rate monitoring
-  
-- **Terminal Display**:
-  - Timestamps with millisecond precision
-  - Color-coded message types
-  - Client ID tracking
-  - Configurable auto-scroll
-  
-- **Search & Filtering**:
-  - Text-based search with highlighting
-  - Results count
-  - Keyboard shortcut support (press "/" to focus)
-  
-- **Command Palette**:
-  - Common actions accessible via Ctrl/Cmd + P
-  - Keyboard shortcuts:
-    - Clear logs (Ctrl/Cmd + K)
-    - Copy visible entries (Ctrl/Cmd + C)
-    - Toggle auto-scroll (Ctrl/Cmd + S)
-    - Focus search (/)
-    
-- **Status Monitoring**:
-  - WebSocket connection state
-  - Active client count
-  - Events per second
-  
-- **Theme Support**:
-  - Dark and light modes
-  - System theme detection
-  - Consistent UI
+The terminal display shows timestamps with millisecond precision and color-coded message types for easy identification of different event types. Advanced search functionality includes text-based search with highlighting and keyboard shortcut support.
+
+A command palette (Ctrl/Cmd + P) provides quick access to common actions:
+- Clear logs (Ctrl/Cmd + K)
+- Copy visible entries (Ctrl/Cmd + C)
+- Toggle auto-scroll (Ctrl/Cmd + S)
+- Focus search (/)
+
+The dashboard includes status indicators for WebSocket connection state, active client count, and events per second. It supports both dark and light themes with system theme detection.
 
 ## Installation
 
