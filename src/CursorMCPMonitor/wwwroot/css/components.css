@@ -40,7 +40,7 @@
 /* Search bar */
 #search-container {
     position: fixed;
-    top: 1rem;
+    top: 0;
     left: 50%;
     transform: translateX(-50%);
     display: none;
@@ -48,13 +48,17 @@
     gap: 0.5rem;
     background: var(--bg-highlight);
     border: 1px solid var(--dim);
-    border-radius: 4px;
-    padding: 0.25rem 0.5rem;
+    border-radius: 0 0 4px 4px;
+    padding: 0.5rem;
     z-index: 1000;
+    width: fit-content;
+    transition: transform 0.2s ease;
+    transform: translate(-50%, -100%);
 }
 
 #search-container.visible {
     display: flex;
+    transform: translate(-50%, 0);
 }
 
 #search-input {
@@ -82,4 +86,9 @@
 .search-match {
     background: var(--dim);
     color: var(--bg);
+}
+
+/* Add padding to terminal when search is visible */
+#terminal.search-active {
+    padding-top: 2.5rem;
 } 

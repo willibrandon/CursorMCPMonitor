@@ -6,6 +6,7 @@ let searchTimeout = null;
 // Show/hide search bar
 function toggleSearch(show) {
     searchContainer.classList.toggle('visible', show);
+    terminal.classList.toggle('search-active', show);
     if (show) {
         searchInput.focus();
         searchInput.select();
