@@ -5,19 +5,169 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCP Monitor</title>
     <style>
+        /* Default theme (Tokyo Night Dark) */
         :root {
-            /* Tokyo Night theme colors */
-            --bg: #1a1b26;
-            --bg-highlight: #1f2335;
-            --text: #a9b1d6;
-            --dim: #565f89;
-            --success: #9ece6a;
-            --error: #f7768e;
-            --info: #7aa2f7;
-            --warning: #e0af68;
-            --purple: #bb9af7;
-            --cyan: #7dcfff;
-            --magenta: #bb9af7;
+            color-scheme: dark light;
+
+            /* Dark theme (Tokyo Night) */
+            --bg-dark: #1a1b26;
+            --bg-highlight-dark: #1f2335;
+            --text-dark: #a9b1d6;
+            --dim-dark: #565f89;
+            --success-dark: #9ece6a;
+            --error-dark: #f7768e;
+            --info-dark: #7aa2f7;
+            --warning-dark: #e0af68;
+            --purple-dark: #bb9af7;
+            --cyan-dark: #7dcfff;
+
+            /* Light theme */
+            --bg-light: #ffffff;
+            --bg-highlight-light: #f5f5f5;
+            --text-light: #24292f;
+            --dim-light: #6e7781;
+            --success-light: #1a7f37;
+            --error-light: #cf222e;
+            --info-light: #0969da;
+            --warning-light: #9a6700;
+            --purple-light: #8250df;
+            --cyan-light: #1b7c83;
+
+            /* High Contrast Dark */
+            --bg-hc-dark: #000000;
+            --bg-highlight-hc-dark: #1f1f1f;
+            --text-hc-dark: #ffffff;
+            --dim-hc-dark: #d3d3d3;
+            --success-hc-dark: #3ff23f;
+            --error-hc-dark: #ff3333;
+            --info-hc-dark: #3b89ff;
+            --warning-hc-dark: #ffd700;
+            --purple-hc-dark: #ff00ff;
+            --cyan-hc-dark: #00ffff;
+
+            /* High Contrast Light */
+            --bg-hc-light: #ffffff;
+            --bg-highlight-hc-light: #e0e0e0;
+            --text-hc-light: #000000;
+            --dim-hc-light: #595959;
+            --success-hc-light: #006400;
+            --error-hc-light: #cc0000;
+            --info-hc-light: #0000cc;
+            --warning-hc-light: #806600;
+            --purple-hc-light: #800080;
+            --cyan-hc-light: #006666;
+
+            /* Default to dark theme */
+            --bg: var(--bg-dark);
+            --bg-highlight: var(--bg-highlight-dark);
+            --text: var(--text-dark);
+            --dim: var(--dim-dark);
+            --success: var(--success-dark);
+            --error: var(--error-dark);
+            --info: var(--info-dark);
+            --warning: var(--warning-dark);
+            --purple: var(--purple-dark);
+            --cyan: var(--cyan-dark);
+        }
+
+        /* Light mode */
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: var(--bg-light);
+                --bg-highlight: var(--bg-highlight-light);
+                --text: var(--text-light);
+                --dim: var(--dim-light);
+                --success: var(--success-light);
+                --error: var(--error-light);
+                --info: var(--info-light);
+                --warning: var(--warning-light);
+                --purple: var(--purple-light);
+                --cyan: var(--cyan-light);
+            }
+        }
+
+        /* High Contrast support */
+        @media (prefers-contrast: more) {
+            :root {
+                --bg: var(--bg-hc-dark);
+                --bg-highlight: var(--bg-highlight-hc-dark);
+                --text: var(--text-hc-dark);
+                --dim: var(--dim-hc-dark);
+                --success: var(--success-hc-dark);
+                --error: var(--error-hc-dark);
+                --info: var(--info-hc-dark);
+                --warning: var(--warning-hc-dark);
+                --purple: var(--purple-hc-dark);
+                --cyan: var(--cyan-hc-dark);
+            }
+        }
+
+        @media (prefers-contrast: more) and (prefers-color-scheme: light) {
+            :root {
+                --bg: var(--bg-hc-light);
+                --bg-highlight: var(--bg-highlight-hc-light);
+                --text: var(--text-hc-light);
+                --dim: var(--dim-hc-light);
+                --success: var(--success-hc-light);
+                --error: var(--error-hc-light);
+                --info: var(--info-hc-light);
+                --warning: var(--warning-hc-light);
+                --purple: var(--purple-hc-light);
+                --cyan: var(--cyan-hc-light);
+            }
+        }
+
+        /* Manual theme selection */
+        [data-theme="dark"] {
+            --bg: var(--bg-dark) !important;
+            --bg-highlight: var(--bg-highlight-dark) !important;
+            --text: var(--text-dark) !important;
+            --dim: var(--dim-dark) !important;
+            --success: var(--success-dark) !important;
+            --error: var(--error-dark) !important;
+            --info: var(--info-dark) !important;
+            --warning: var(--warning-dark) !important;
+            --purple: var(--purple-dark) !important;
+            --cyan: var(--cyan-dark) !important;
+        }
+
+        [data-theme="light"] {
+            --bg: var(--bg-light) !important;
+            --bg-highlight: var(--bg-highlight-light) !important;
+            --text: var(--text-light) !important;
+            --dim: var(--dim-light) !important;
+            --success: var(--success-light) !important;
+            --error: var(--error-light) !important;
+            --info: var(--info-light) !important;
+            --warning: var(--warning-light) !important;
+            --purple: var(--purple-light) !important;
+            --cyan: var(--cyan-light) !important;
+        }
+
+        [data-theme="hc-dark"] {
+            --bg: var(--bg-hc-dark) !important;
+            --bg-highlight: var(--bg-highlight-hc-dark) !important;
+            --text: var(--text-hc-dark) !important;
+            --dim: var(--dim-hc-dark) !important;
+            --success: var(--success-hc-dark) !important;
+            --error: var(--error-hc-dark) !important;
+            --info: var(--info-hc-dark) !important;
+            --warning: var(--warning-hc-dark) !important;
+            --purple: var(--purple-hc-dark) !important;
+            --cyan: var(--cyan-hc-dark) !important;
+        }
+
+        [data-theme="hc-light"] {
+            --bg: var(--bg-hc-light) !important;
+            --bg-highlight: var(--bg-highlight-hc-light) !important;
+            --text: var(--text-hc-light) !important;
+            --dim: var(--dim-hc-light) !important;
+            --success: var(--success-hc-light) !important;
+            --error: var(--error-hc-light) !important;
+            --info: var(--info-hc-light) !important;
+            --warning: var(--warning-hc-light) !important;
+            --purple: var(--purple-hc-light) !important;
+            --cyan: var(--cyan-hc-light) !important;
         }
 
         * {
@@ -26,6 +176,45 @@
             box-sizing: border-box;
         }
 
+        /* Theme switcher styles */
+        #theme-switcher {
+            position: fixed;
+            top: 0.5rem;
+            right: calc(1rem + 12px); /* 12px is the scrollbar width */
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--bg-highlight);
+            border-radius: 6px;
+            border: 1px solid var(--dim);
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-button {
+            padding: 0.25rem 0.5rem;
+            border: 1px solid var(--dim);
+            background: var(--bg);
+            color: var(--text);
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .theme-button:hover {
+            background: var(--bg-highlight);
+            border-color: var(--text);
+        }
+
+        .theme-button.active {
+            background: var(--info);
+            color: var(--bg);
+            border-color: var(--info);
+        }
+
+        /* Rest of existing styles */
         body {
             background: var(--bg);
             color: var(--text);
@@ -109,9 +298,41 @@
     </style>
 </head>
 <body>
+    <div id="theme-switcher">
+        <button class="theme-button active" data-theme="dark">Dark</button>
+        <button class="theme-button" data-theme="light">Light</button>
+        <button class="theme-button" data-theme="hc-dark">HC Dark</button>
+        <button class="theme-button" data-theme="hc-light">HC Light</button>
+    </div>
     <div id="terminal"></div>
 
     <script>
+        // Add theme switching functionality
+        const themeSwitcher = document.getElementById('theme-switcher');
+        const themeButtons = document.querySelectorAll('.theme-button');
+        
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            themeButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === savedTheme);
+            });
+        }
+
+        themeSwitcher.addEventListener('click', (e) => {
+            if (e.target.classList.contains('theme-button')) {
+                const theme = e.target.dataset.theme;
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
+                
+                themeButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn === e.target);
+                });
+            }
+        });
+
+        // Rest of existing JavaScript
         const terminal = document.getElementById('terminal');
         let ws;
 
