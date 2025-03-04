@@ -13,6 +13,20 @@
         <input type="text" id="search-input" placeholder="Search logs... (/ to search, Esc to close)">
         <span id="search-count"></span>
     </div>
+    <div id="status-indicators">
+        <div class="status-item">
+            <span class="status-dot" id="ws-status"></span>
+            <span class="status-label">Connection</span>
+        </div>
+        <div class="status-item">
+            <span class="status-dot" id="client-count">0</span>
+            <span class="status-label">Clients</span>
+        </div>
+        <div class="status-item">
+            <span class="status-dot" id="event-rate">0</span>
+            <span class="status-label">evt/s</span>
+        </div>
+    </div>
     <div id="terminal"></div>
     <div id="theme-indicator">theme: dark</div>
 

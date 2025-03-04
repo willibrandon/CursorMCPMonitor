@@ -90,5 +90,52 @@
 
 /* Add padding to terminal when search is visible */
 #terminal.search-active {
-    padding-top: 2.5rem;
+    padding-top: 2rem;
+}
+
+/* Status indicators */
+#status-indicators {
+    position: fixed;
+    top: 0.75rem;
+    left: 1rem;
+    display: flex;
+    gap: 1rem;
+    z-index: 900;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 11px;
+    color: var(--dim);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--dim);
+}
+
+#ws-status {
+    background: var(--error);
+}
+
+#ws-status.connected {
+    background: var(--success);
+}
+
+#client-count, #event-rate {
+    width: auto;
+    height: auto;
+    border-radius: 2px;
+    padding: 0.125rem 0.25rem;
+    font-size: 10px;
+    background: var(--bg-highlight);
+    border: 1px solid var(--dim);
+}
+
+#terminal {
+    padding-top: 2rem;
 } 
