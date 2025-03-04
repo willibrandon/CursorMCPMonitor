@@ -64,6 +64,16 @@ function addLine(data) {
     }
     
     terminal.insertBefore(line, terminal.firstChild);
+
+    // If there's an active search, apply it to the new line
+    const searchInput = document.getElementById('search-input');
+    if (searchInput && searchInput.value.trim()) {
+        const searchText = searchInput.value.trim();
+        const matches = window.highlightMatches ? window.highlightMatches(line, searchText) : 0;
+        if (matches === 0) {
+            line.style.display = 'none';
+        }
+    }
 }
 
 // Export for use in other modules

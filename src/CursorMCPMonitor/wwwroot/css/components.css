@@ -35,4 +35,50 @@
 .error { color: var(--error); }
 .close { color: var(--dim); }
 .connect { color: var(--purple); }
-.warning { color: var(--warning); } 
+.warning { color: var(--warning); }
+
+/* Search bar */
+#search-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-highlight);
+    border: 1px solid var(--dim);
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    z-index: 1000;
+}
+
+#search-container.visible {
+    display: flex;
+}
+
+#search-input {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: inherit;
+    font-size: inherit;
+    width: 200px;
+    padding: 0.25rem;
+    outline: none;
+}
+
+#search-input::placeholder {
+    color: var(--dim);
+}
+
+#search-count {
+    color: var(--dim);
+    font-size: 11px;
+    user-select: none;
+}
+
+/* Highlight search matches */
+.search-match {
+    background: var(--dim);
+    color: var(--bg);
+} 
