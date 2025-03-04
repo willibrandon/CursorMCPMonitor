@@ -1,0 +1,38 @@
+/* Terminal line styles */
+.line {
+    padding: 0.125rem 0;
+    display: flex;
+    gap: 1rem;
+}
+
+.line:hover {
+    background: var(--bg-highlight);
+}
+
+.timestamp {
+    color: var(--dim);
+    min-width: 12ch;
+}
+
+.client-id {
+    color: var(--cyan);
+    min-width: 10ch;
+}
+
+.type {
+    min-width: 12ch;
+    font-weight: 600;
+}
+
+.message {
+    flex: 1;
+    color: var(--text);
+}
+
+/* Event type colors */
+.create { color: var(--success); }
+.list { color: var(--info); }
+.error { color: var(--error); }
+.close { color: var(--dim); }
+.connect { color: var(--purple); }
+.warning { color: var(--warning); } 
