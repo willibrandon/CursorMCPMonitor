@@ -12,6 +12,7 @@ public partial class LogProcessorService : ILogProcessorService
 {
     private readonly IConsoleOutputService _consoleOutput;
     private readonly ILogger<LogProcessorService> _logger;
+    private readonly WebSocketService _webSocketService;
     private string? _filterPattern;
     private LogLevel _verbosityLevel = LogLevel.Debug;
 
@@ -22,10 +23,12 @@ public partial class LogProcessorService : ILogProcessorService
 
     public LogProcessorService(
         IConsoleOutputService consoleOutput,
-        ILogger<LogProcessorService> logger)
+        ILogger<LogProcessorService> logger,
+        WebSocketService webSocketService)
     {
         _consoleOutput = consoleOutput;
         _logger = logger;
+        _webSocketService = webSocketService;
     }
 
     /// <summary>
@@ -136,28 +139,40 @@ public partial class LogProcessorService : ILogProcessorService
     private void ProcessUnstructuredLine(string fullFilePath, string line)
     {
         var fileName = Path.GetFileName(fullFilePath);
+        var logEvent = new
+        {
+            Type = "UnstructuredLog",
+            Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"),
+            FileName = fileName,
+            Message = line
+        };
         
         // Handle unstructured lines
         if (line.Contains("No server info found", StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogError("NoServerInfo from {LogFile}: {Message}", fileName, line);
             _consoleOutput.WriteError("[NoServerInfo]", line);
+            logEvent = new { Type = "NoServerInfo", Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), FileName = fileName, Message = line };
         }
         else if (line.Contains("unrecognized_keys", StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogError("UnrecognizedKeys from {LogFile}: {Message}", fileName, line);
             _consoleOutput.WriteError("[UnrecognizedKeys]", line);
+            logEvent = new { Type = "UnrecognizedKeys", Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), FileName = fileName, Message = line };
         }
         else if (line.Contains("No workspace folders found", StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogWarning("NoWorkspace from {LogFile}: {Message}", fileName, line);
             _consoleOutput.WriteWarning("[Warning]", line);
+            logEvent = new { Type = "NoWorkspace", Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), FileName = fileName, Message = line };
         }
         else
         {
             _logger.LogInformation("RawLine from {LogFile}: {Message}", fileName, line);
             _consoleOutput.WriteRaw("[Raw]", line);
         }
+
+        _webSocketService.BroadcastAsync(logEvent).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -166,13 +181,14 @@ public partial class LogProcessorService : ILogProcessorService
     private void ProcessStructuredLine(string fullFilePath, string timestamp, string level, string clientId, string message)
     {
         var fileName = Path.GetFileName(fullFilePath);
-        var logProperties = new
+        var logEvent = new
         {
-            LogFile = fileName,
+            Type = "StructuredLog",
             Timestamp = timestamp,
             Level = level,
             ClientId = clientId,
-            Message = message
+            Message = message,
+            FileName = fileName
         };
         
         // Process different message types
@@ -181,30 +197,35 @@ public partial class LogProcessorService : ILogProcessorService
             _logger.LogInformation("{EventType} detected: {LogFile} {Timestamp} [{Level}] {ClientId}: {Message}", 
                 "CreateClient", fileName, timestamp, level, clientId, message);
             _consoleOutput.WriteSuccess($"[{timestamp}]", $"[CreateClient] [Client: {clientId}] => {message}");
+            logEvent = new { Type = "CreateClient", Timestamp = timestamp, Level = level, ClientId = clientId, Message = message, FileName = fileName };
         }
         else if (message.Contains("ListOfferings action", StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogInformation("{EventType} detected: {LogFile} {Timestamp} [{Level}] {ClientId}: {Message}", 
                 "ListOfferings", fileName, timestamp, level, clientId, message);
             _consoleOutput.WriteHighlight($"[{timestamp}]", $"[ListOfferings] [Client: {clientId}] => {message}");
+            logEvent = new { Type = "ListOfferings", Timestamp = timestamp, Level = level, ClientId = clientId, Message = message, FileName = fileName };
         }
         else if (message.Contains("Error in MCP:", StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogError("{EventType} detected: {LogFile} {Timestamp} [{Level}] {ClientId}: {Message}", 
                 "MCPError", fileName, timestamp, level, clientId, message);
             _consoleOutput.WriteError($"[{timestamp}]", $"[Error] [Client: {clientId}] => {message}");
+            logEvent = new { Type = "MCPError", Timestamp = timestamp, Level = level, ClientId = clientId, Message = message, FileName = fileName };
         }
         else if (message.Contains("Client closed for command", StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogWarning("{EventType} detected: {LogFile} {Timestamp} [{Level}] {ClientId}: {Message}", 
                 "ClientClosed", fileName, timestamp, level, clientId, message);
             _consoleOutput.WriteError($"[{timestamp}]", $"[ClientClosed] [Client: {clientId}] => {message}");
+            logEvent = new { Type = "ClientClosed", Timestamp = timestamp, Level = level, ClientId = clientId, Message = message, FileName = fileName };
         }
         else if (message.Contains("Successfully connected to stdio server", StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogInformation("{EventType} detected: {LogFile} {Timestamp} [{Level}] {ClientId}: {Message}", 
                 "Connected", fileName, timestamp, level, clientId, message);
             _consoleOutput.WriteSuccess($"[{timestamp}]", $"[Connected] [Client: {clientId}] => {message}");
+            logEvent = new { Type = "Connected", Timestamp = timestamp, Level = level, ClientId = clientId, Message = message, FileName = fileName };
         }
         else
         {
@@ -214,19 +235,24 @@ public partial class LogProcessorService : ILogProcessorService
                 _logger.LogError("{EventType} detected: {LogFile} {Timestamp} [{Level}] {ClientId}: {Message}", 
                     "GenericError", fileName, timestamp, level, clientId, message);
                 _consoleOutput.WriteError($"[{timestamp}]", $"[{level}] [Client: {clientId}] => {message}");
+                logEvent = new { Type = "GenericError", Timestamp = timestamp, Level = level, ClientId = clientId, Message = message, FileName = fileName };
             }
             else if (level.Equals("warning", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogWarning("{EventType} detected: {LogFile} {Timestamp} [{Level}] {ClientId}: {Message}", 
                     "GenericWarning", fileName, timestamp, level, clientId, message);
                 _consoleOutput.WriteWarning($"[{timestamp}]", $"[{level}] [Client: {clientId}] => {message}");
+                logEvent = new { Type = "GenericWarning", Timestamp = timestamp, Level = level, ClientId = clientId, Message = message, FileName = fileName };
             }
             else
             {
                 _logger.LogInformation("{EventType} detected: {LogFile} {Timestamp} [{Level}] {ClientId}: {Message}", 
                     "GenericInfo", fileName, timestamp, level, clientId, message);
                 _consoleOutput.WriteInfo($"[{timestamp}]", $"[{level}] [Client: {clientId}] => {message}");
+                logEvent = new { Type = "GenericInfo", Timestamp = timestamp, Level = level, ClientId = clientId, Message = message, FileName = fileName };
             }
         }
+
+        _webSocketService.BroadcastAsync(logEvent).ConfigureAwait(false);
     }
 } 

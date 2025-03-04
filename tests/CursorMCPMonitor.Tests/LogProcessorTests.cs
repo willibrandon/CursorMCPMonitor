@@ -9,6 +9,7 @@ public class LogProcessorTests
 {
     private readonly Mock<ILogger<LogProcessorService>> _loggerMock;
     private readonly Mock<IConsoleOutputService> _consoleOutputMock;
+    private readonly Mock<WebSocketService> _webSocketServiceMock;
     private readonly LogProcessorService _processor;
     private readonly AppConfig _config;
     private readonly string _testFilePath = "test.log";
@@ -17,12 +18,13 @@ public class LogProcessorTests
     {
         _loggerMock = new Mock<ILogger<LogProcessorService>>();
         _consoleOutputMock = new Mock<IConsoleOutputService>();
+        _webSocketServiceMock = new Mock<WebSocketService>();
         _config = new AppConfig
         {
             Verbosity = "info",
             Filter = null
         };
-        _processor = new LogProcessorService(_consoleOutputMock.Object, _loggerMock.Object);
+        _processor = new LogProcessorService(_consoleOutputMock.Object, _loggerMock.Object, _webSocketServiceMock.Object);
     }
 
     [Theory]

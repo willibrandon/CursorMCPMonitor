@@ -14,6 +14,8 @@ using System.Reflection;
 using System.CommandLine;
 using System.CommandLine.Help;
 using System.CommandLine.IO;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 
 namespace CursorMCPMonitor;
 
@@ -69,12 +71,28 @@ public class Program
 
             Log.Information("Starting Cursor MCP Monitor...");
 
-            var host = CreateHostBuilder(args).Build();
-            var config = host.Services.GetRequiredService<IConfiguration>();
+            var builder = WebApplication.CreateBuilder(args);
+            
+            // Configure web server to use port 5050
+            builder.WebHost.UseUrls("http://localhost:5050");
+            
+            // Add services
+            builder.Services.AddSingleton<IConsoleOutputService, ConsoleOutputService>();
+            builder.Services.AddSingleton<ILogProcessorService, LogProcessorService>();
+            builder.Services.AddSingleton<ILogMonitorService, LogMonitorService>();
+            builder.Services.AddSingleton<WebSocketService>();
+
+            // Configure logging
+            builder.Logging.ClearProviders();
+            builder.Logging.AddSerilog();
+
+            var app = builder.Build();
+            var config = app.Services.GetRequiredService<IConfiguration>();
             var appConfig = AppConfig.Load(config);
-            var logger = host.Services.GetRequiredService<ILogger<Program>>();
-            var consoleOutput = host.Services.GetRequiredService<IConsoleOutputService>();
-            var logMonitorService = host.Services.GetRequiredService<ILogMonitorService>();
+            var logger = app.Services.GetRequiredService<ILogger<Program>>();
+            var consoleOutput = app.Services.GetRequiredService<IConsoleOutputService>();
+            var logMonitorService = app.Services.GetRequiredService<ILogMonitorService>();
+            var webSocketService = app.Services.GetRequiredService<WebSocketService>();
 
             Console.OutputEncoding = Encoding.UTF8;
             consoleOutput.WriteHighlight("===", "Cursor AI MCP Log Monitor ===");
@@ -84,7 +102,7 @@ public class Program
             consoleOutput.WriteInfo("Configuration:", $"Verbosity level: {appConfig.Verbosity}");
 
             // Get services and configure them
-            var logProcessorService = host.Services.GetRequiredService<ILogProcessorService>();
+            var logProcessorService = app.Services.GetRequiredService<ILogProcessorService>();
             
             // Apply filter and verbosity settings
             if (config["Filter"] != null)
@@ -97,59 +115,40 @@ public class Program
             // Apply verbosity level
             logProcessorService.SetVerbosityLevel(appConfig.Verbosity);
             
+            // Configure web server
+            app.UseWebSockets();
+            
+            // WebSocket endpoint
+            app.Map("/ws", async context =>
+            {
+                if (context.WebSockets.IsWebSocketRequest)
+                {
+                    using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                    await webSocketService.HandleClientAsync(webSocket);
+                }
+                else
+                {
+                    context.Response.StatusCode = 400;
+                }
+            });
+
+            // Serve static files from wwwroot
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+
             // Start monitoring
             logMonitorService.StartMonitoring(appConfig.LogsRoot!, appConfig);
             
-            // Keep the application running
-            await host.RunAsync();
-            
-            return;
+            // Start the web server
+            await app.RunAsync();
         }
         catch (Exception ex)
         {
             Log.Fatal(ex, "Host terminated unexpectedly");
-            return;
         }
         finally
         {
             Log.CloseAndFlush();
         }
     }
-
-    private static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args)
-            .UseSerilog((context, services, configuration) => configuration
-                .ReadFrom.Configuration(context.Configuration)
-                .ReadFrom.Services(services)
-                .Enrich.FromLogContext()
-                .Enrich.WithMachineName()
-                .Enrich.WithThreadId()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                .WriteTo.Console(outputTemplate: 
-                    "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff}] [{Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}")
-                .WriteTo.File(
-                    Path.Combine(AppContext.BaseDirectory, "logs", "cursormonitor-.log"),
-                    rollingInterval: RollingInterval.Day,
-                    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}"))
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(Directory.GetCurrentDirectory())
-                      .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                      .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-                      .AddEnvironmentVariables();
-                      
-                // Add command line arguments
-                var cmdLineArgs = CommandLineOptions.Parse(args);
-                if (cmdLineArgs.Count > 0)
-                {
-                    config.AddInMemoryCollection(cmdLineArgs);
-                }
-            })
-            .ConfigureServices((hostContext, services) =>
-            {
-                // Register services
-                services.AddSingleton<IConsoleOutputService, ConsoleOutputService>();
-                services.AddSingleton<ILogProcessorService, LogProcessorService>();
-                services.AddSingleton<ILogMonitorService, LogMonitorService>();
-            });
 }
