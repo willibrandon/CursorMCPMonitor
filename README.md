@@ -34,6 +34,44 @@ The Model Context Protocol (MCP) is an open protocol that standardizes how appli
   - Contextual properties (machine name, thread ID, etc.)
   - Log level filtering and output customization
 
+## Interactive Dashboard
+
+The application includes a web-based dashboard for monitoring and analysis:
+
+- **Real-time Event Streaming**:
+  - WebSocket-based updates
+  - Automatic reconnection handling
+  - Event rate monitoring
+  
+- **Terminal Display**:
+  - Timestamps with millisecond precision
+  - Color-coded message types
+  - Client ID tracking
+  - Configurable auto-scroll
+  
+- **Search & Filtering**:
+  - Text-based search with highlighting
+  - Results count
+  - Keyboard shortcut support (press "/" to focus)
+  
+- **Command Palette**:
+  - Common actions accessible via Ctrl/Cmd + P
+  - Keyboard shortcuts:
+    - Clear logs (Ctrl/Cmd + K)
+    - Copy visible entries (Ctrl/Cmd + C)
+    - Toggle auto-scroll (Ctrl/Cmd + S)
+    - Focus search (/)
+    
+- **Status Monitoring**:
+  - WebSocket connection state
+  - Active client count
+  - Events per second
+  
+- **Theme Support**:
+  - Dark and light modes
+  - System theme detection
+  - Consistent UI
+
 ## Installation
 
 You can install the tool globally using the .NET CLI:
