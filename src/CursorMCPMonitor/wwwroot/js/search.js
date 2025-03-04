@@ -23,6 +23,12 @@ function clearSearch() {
         match.outerHTML = match.innerHTML;
     }
     searchCount.textContent = '';
+
+    // Show all lines when clearing search
+    const lines = terminal.getElementsByClassName('line');
+    for (const line of lines) {
+        line.style.display = '';
+    }
 }
 
 // Highlight search matches in a line
@@ -93,8 +99,8 @@ searchInput.addEventListener('keydown', (e) => {
 
 // Global keyboard shortcuts
 document.addEventListener('keydown', (e) => {
-    // Ctrl/Cmd + F to show search
-    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+    // Use forward slash to trigger search
+    if (e.key === '/' && !searchContainer.classList.contains('visible')) {
         toggleSearch(true);
         e.preventDefault();
     }

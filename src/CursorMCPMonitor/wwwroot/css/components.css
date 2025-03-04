@@ -41,7 +41,8 @@
 #search-container {
     position: fixed;
     top: 1rem;
-    right: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
     display: none;
     align-items: center;
     gap: 0.5rem;
@@ -62,7 +63,7 @@
     color: var(--text);
     font-family: inherit;
     font-size: inherit;
-    width: 200px;
+    width: 400px;
     padding: 0.25rem;
     outline: none;
 }
