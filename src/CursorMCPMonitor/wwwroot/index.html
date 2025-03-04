@@ -170,51 +170,13 @@
             --cyan: var(--cyan-hc-light) !important;
         }
 
+        /* Remove all theme switcher styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* Theme switcher styles */
-        #theme-switcher {
-            position: fixed;
-            top: 0.5rem;
-            right: calc(1rem + 12px); /* 12px is the scrollbar width */
-            display: flex;
-            gap: 0.5rem;
-            padding: 0.5rem;
-            background: var(--bg-highlight);
-            border-radius: 6px;
-            border: 1px solid var(--dim);
-            z-index: 1000;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        .theme-button {
-            padding: 0.25rem 0.5rem;
-            border: 1px solid var(--dim);
-            background: var(--bg);
-            color: var(--text);
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .theme-button:hover {
-            background: var(--bg-highlight);
-            border-color: var(--text);
-        }
-
-        .theme-button.active {
-            background: var(--info);
-            color: var(--bg);
-            border-color: var(--info);
-        }
-
-        /* Rest of existing styles */
         body {
             background: var(--bg);
             color: var(--text);
@@ -295,41 +257,50 @@
             background: var(--dim);
             color: var(--text);
         }
+
+        /* Theme indicator */
+        #theme-indicator {
+            position: fixed;
+            bottom: 0.5rem;
+            right: calc(1rem + 12px);
+            font-size: 11px;
+            color: var(--dim);
+            cursor: pointer;
+            user-select: none;
+            z-index: 1000;
+            opacity: 0.7;
+        }
+
+        #theme-indicator:hover {
+            color: var(--text);
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
-    <div id="theme-switcher">
-        <button class="theme-button active" data-theme="dark">Dark</button>
-        <button class="theme-button" data-theme="light">Light</button>
-        <button class="theme-button" data-theme="hc-dark">HC Dark</button>
-        <button class="theme-button" data-theme="hc-light">HC Light</button>
-    </div>
     <div id="terminal"></div>
+    <div id="theme-indicator">theme: dark</div>
 
     <script>
-        // Add theme switching functionality
-        const themeSwitcher = document.getElementById('theme-switcher');
-        const themeButtons = document.querySelectorAll('.theme-button');
-        
+        const themes = ['dark', 'light', 'hc-dark', 'hc-light'];
+        let currentThemeIndex = 0;
+        const themeIndicator = document.getElementById('theme-indicator');
+
         // Check for saved theme preference
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme) {
             document.documentElement.setAttribute('data-theme', savedTheme);
-            themeButtons.forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.theme === savedTheme);
-            });
+            currentThemeIndex = themes.indexOf(savedTheme);
+            themeIndicator.textContent = `theme: ${savedTheme}`;
         }
 
-        themeSwitcher.addEventListener('click', (e) => {
-            if (e.target.classList.contains('theme-button')) {
-                const theme = e.target.dataset.theme;
-                document.documentElement.setAttribute('data-theme', theme);
-                localStorage.setItem('theme', theme);
-                
-                themeButtons.forEach(btn => {
-                    btn.classList.toggle('active', btn === e.target);
-                });
-            }
+        // Click to cycle themes
+        themeIndicator.addEventListener('click', () => {
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            const theme = themes[currentThemeIndex];
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            themeIndicator.textContent = `theme: ${theme}`;
         });
 
         // Rest of existing JavaScript
