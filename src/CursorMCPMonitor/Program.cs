@@ -92,7 +92,7 @@ public class Program
             var logger = app.Services.GetRequiredService<ILogger<Program>>();
             var consoleOutput = app.Services.GetRequiredService<IConsoleOutputService>();
             var logMonitorService = app.Services.GetRequiredService<ILogMonitorService>();
-            var webSocketService = app.Services.GetRequiredService<WebSocketService>();
+            var webSocketService = app.Services.GetRequiredService<IWebSocketService>();
 
             // Setup graceful shutdown
             var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
