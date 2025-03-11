@@ -95,11 +95,12 @@ searchInput.addEventListener('keydown', (e) => {
 
 // Global keyboard shortcuts
 document.addEventListener('keydown', (e) => {
-    // Use forward slash to trigger search
-    if (e.key === '/' && document.activeElement !== searchInput) {
+    // Use forward slash to focus search
+    if (e.key === '/' && document.activeElement !== searchInput && 
+        document.activeElement.tagName !== 'INPUT') {
         searchInput.focus();
         searchInput.select();
-        e.preventDefault();
+        e.preventDefault(); // Prevent browser's quick find
     }
 });
 

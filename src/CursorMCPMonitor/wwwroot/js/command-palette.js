@@ -71,7 +71,9 @@ function toggleAutoScroll() {
 }
 
 function focusSearch() {
-    window.toggleSearch(true);
+    const searchInput = document.getElementById('search-input');
+    searchInput.focus();
+    searchInput.select();
 }
 
 // Event listeners
