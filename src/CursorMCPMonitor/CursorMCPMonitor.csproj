@@ -8,6 +8,7 @@
     <Nullable>enable</Nullable>
 	<Deterministic>true</Deterministic>
 	<EnableDefaultContentItems>false</EnableDefaultContentItems>
+    <IsPackable>true</IsPackable>
     
     <!-- Tool configuration -->
     <PackAsTool>true</PackAsTool>

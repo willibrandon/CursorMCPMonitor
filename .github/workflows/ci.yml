@@ -77,7 +77,9 @@ jobs:
       run: dotnet build --configuration Release --no-restore
     
     - name: Pack
-      run: dotnet pack src/CursorMCPMonitor/CursorMCPMonitor.csproj --configuration Release --no-build --output nupkg
+      run: |
+        mkdir -p nupkg
+        dotnet pack src/CursorMCPMonitor/CursorMCPMonitor.csproj --configuration Release --no-build --output nupkg
     
     - name: Push to GitHub Packages
       run: |
