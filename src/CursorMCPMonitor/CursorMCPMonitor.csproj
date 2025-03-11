@@ -14,7 +14,7 @@
     <PackageOutputPath>./nupkg</PackageOutputPath>
     
     <!-- Package metadata -->
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>willibrandon</Authors>
     <Company>willibrandon</Company>
     <Description>A monitoring tool for Cursor MCP logs that provides real-time tracking of log files with filtering and structured output.</Description>
