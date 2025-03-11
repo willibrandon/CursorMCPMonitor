@@ -1,6 +1,7 @@
 ﻿using CursorMCPMonitor.Configuration;
 using CursorMCPMonitor.Interfaces;
 using CursorMCPMonitor.Services;
+using Microsoft.Extensions.FileProviders;
 using Serilog;
 using System.Reflection;
 using System.Text;
@@ -127,11 +128,145 @@ public class Program
                     context.Response.StatusCode = 400;
                 }
             });
-
-            // Serve static files from wwwroot
-            app.UseDefaultFiles();
-            app.UseStaticFiles();
-
+            
+            // Configure static files with the correct paths for both development and tool installation
+            var staticFileProviders = new List<IFileProvider>();
+            var staticFilePathsFound = false;
+            
+            // First, try the regular wwwroot folder (for development)
+            var wwwrootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+            logger.LogDebug("Checking for wwwroot at: {Path}", wwwrootPath);
+            if (Directory.Exists(wwwrootPath))
+            {
+                logger.LogInformation("Using wwwroot folder at: {Path}", wwwrootPath);
+                staticFileProviders.Add(new PhysicalFileProvider(wwwrootPath));
+                staticFilePathsFound = true;
+            }
+            
+            // Next, try the .NET tool staticwebassets folder (for installed tools)
+            var toolLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location);
+            if (!string.IsNullOrEmpty(toolLocation))
+            {
+                // Navigate up to the package root
+                var directoryInfo = new DirectoryInfo(toolLocation);
+                var packageRoot = directoryInfo?.Parent?.Parent?.Parent?.FullName;
+                if (!string.IsNullOrEmpty(packageRoot))
+                {
+                    var staticAssetsPath = Path.Combine(packageRoot, "staticwebassets");
+                    logger.LogDebug("Checking for staticwebassets at: {Path}", staticAssetsPath);
+                    if (Directory.Exists(staticAssetsPath))
+                    {
+                        logger.LogInformation("Using .NET tool staticwebassets folder at: {Path}", staticAssetsPath);
+                        staticFileProviders.Add(new PhysicalFileProvider(staticAssetsPath));
+                        staticFilePathsFound = true;
+                    }
+                }
+            }
+            
+            // Look for 'wwwroot' in the exact location specified for .NET tools
+            var dotnetToolsRoot = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".dotnet", "tools");
+            
+            // Try the direct tools path first
+            var directToolsWwwrootPath = Path.Combine(dotnetToolsRoot, "wwwroot");
+            logger.LogDebug("Checking for wwwroot at tools path: {Path}", directToolsWwwrootPath);
+            if (Directory.Exists(directToolsWwwrootPath))
+            {
+                logger.LogInformation("Using direct tools wwwroot folder at: {Path}", directToolsWwwrootPath);
+                staticFileProviders.Add(new PhysicalFileProvider(directToolsWwwrootPath));
+                staticFilePathsFound = true;
+            }
+                
+            // Try the .store path
+            var staticWebAssetsPath = Path.Combine(
+                dotnetToolsRoot, ".store", "cursormcpmonitor", "0.1.1", "cursormcpmonitor", "0.1.1", "tools", "net9.0", "any", "wwwroot");
+                
+            logger.LogDebug("Checking for wwwroot at .store path: {Path}", staticWebAssetsPath);
+            if (Directory.Exists(staticWebAssetsPath))
+            {
+                logger.LogInformation("Using .store wwwroot folder at: {Path}", staticWebAssetsPath);
+                staticFileProviders.Add(new PhysicalFileProvider(staticWebAssetsPath));
+                staticFilePathsFound = true;
+            }
+            
+            // Try staticwebassets path
+            var staticwebassetPath = Path.Combine(
+                dotnetToolsRoot, ".store", "cursormcpmonitor", "0.1.1", "cursormcpmonitor", "0.1.1", "staticwebassets");
+            
+            logger.LogDebug("Checking for staticwebassets at .store path: {Path}", staticwebassetPath);
+            if (Directory.Exists(staticwebassetPath))
+            {
+                logger.LogInformation("Using .store staticwebassets folder at: {Path}", staticwebassetPath);
+                staticFileProviders.Add(new PhysicalFileProvider(staticwebassetPath));
+                staticFilePathsFound = true;
+            }
+            
+            // Set up a backup static file provider from embedded resources if all else fails
+            if (!staticFilePathsFound)
+            {
+                logger.LogWarning("No static file paths found, trying embedded resources.");
+                var assembly = Assembly.GetExecutingAssembly();
+                var embeddedProvider = new EmbeddedFileProvider(assembly, "CursorMCPMonitor.wwwroot");
+                staticFileProviders.Add(embeddedProvider);
+            }
+            
+            // If we have providers, use them - CRITICAL: Order matters for middleware
+            // UseStaticFiles should come BEFORE UseDefaultFiles
+            if (staticFileProviders.Count > 0)
+            {
+                // Create composite provider or use single provider
+                IFileProvider provider = staticFileProviders.Count == 1 
+                    ? staticFileProviders[0] 
+                    : new CompositeFileProvider(staticFileProviders);
+                
+                // Configure static files
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    FileProvider = provider,
+                    RequestPath = "" // Ensure no prefix
+                });
+                
+                // Configure default files AFTER static files
+                app.UseDefaultFiles(new DefaultFilesOptions
+                {
+                    FileProvider = provider,
+                    DefaultFileNames = new List<string> { "index.html" }
+                });
+                
+                // Add a fallback to index.html for SPA routing
+                app.MapFallbackToFile("index.html", new StaticFileOptions
+                {
+                    FileProvider = provider
+                });
+                
+                // Log the web interface URL
+                consoleOutput.WriteSuccess("Web interface:", "http://localhost:5050");
+                logger.LogInformation("Web interface available at: http://localhost:5050");
+            }
+            else
+            {
+                logger.LogError("No static web assets found. Web interface will not be available.");
+                consoleOutput.WriteError("Error:", "No static web assets found. Web interface will not be available.");
+            }
+            
+            // DEBUG: List contents of directories to help diagnose issues
+            foreach (var path in new[] { wwwrootPath, staticWebAssetsPath, staticwebassetPath, directToolsWwwrootPath })
+            {
+                if (Directory.Exists(path))
+                {
+                    logger.LogDebug("Contents of {Path}:", path);
+                    foreach (var file in Directory.GetFiles(path))
+                    {
+                        logger.LogDebug("  - {File}", Path.GetFileName(file));
+                    }
+                    foreach (var dir in Directory.GetDirectories(path))
+                    {
+                        logger.LogDebug("  - {Dir}/", Path.GetFileName(dir));
+                    }
+                }
+            }
+            
             // Start monitoring
             logMonitorService.StartMonitoring(appConfig.LogsRoot!, appConfig);
             
