@@ -88,6 +88,17 @@
             <input type="text" id="client-id-filter" placeholder="Filter by client ID...">
             <button id="clear-client-filter">Clear</button>
         </div>
+        
+        <div id="time-filter">
+            <div class="filter-label">Time Range:</div>
+            <div class="time-filter-inputs">
+                <input type="text" id="start-time-filter" placeholder="HH:MM:SS.SSS">
+                <span class="time-separator">to</span>
+                <input type="text" id="end-time-filter" placeholder="HH:MM:SS.SSS">
+            </div>
+            <button id="apply-time-filter">Apply</button>
+            <button id="clear-time-filter">Clear</button>
+        </div>
     </div>
     
     <div id="terminal"></div>
@@ -100,6 +111,7 @@
     <script src="js/command-palette.js"></script>
     <script src="js/event-filters.js"></script>
     <script src="js/client-filter.js"></script>
+    <script src="js/time-filter.js"></script>
     <script>
         // Initialize WebSocket connection
         window.wsConnect();

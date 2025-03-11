@@ -1,23 +1,30 @@
 const terminal = document.getElementById('terminal');
 
-function formatTime(date) {
+// Format a timestamp from milliseconds or date object
+function formatTime(timestamp) {
+    // If it's a Date object, use it directly
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
     return date.toTimeString().split(' ')[0] + '.' + 
            date.getMilliseconds().toString().padStart(3, '0');
 }
 
 function addLine(data) {
-    const now = new Date();
     const line = document.createElement('div');
     line.className = 'line';
     
     let typeClass = '';
     
     if (typeof data === 'string') {
+        // For string messages, use current time as fallback
+        const now = new Date();
         line.innerHTML = `<span class="timestamp">${formatTime(now)}</span><span class="message">${data}</span>`;
     } else {
         const type = data.Type || 'Unknown';
         const clientId = data.ClientId || '-';
         const message = data.Message || '';
+        
+        // Use the timestamp from the data if available, otherwise use current time
+        const timestamp = data.Timestamp ? new Date(data.Timestamp) : new Date();
         
         let displayType = type;
         typeClass = type.toLowerCase();
@@ -58,7 +65,7 @@ function addLine(data) {
         }
 
         line.innerHTML = `
-            <span class="timestamp">${formatTime(now)}</span>
+            <span class="timestamp">${formatTime(timestamp)}</span>
             <span class="client-id">${clientId}</span>
             <span class="type ${typeClass}">${displayType}</span>
             <span class="message">${message}</span>

@@ -338,3 +338,79 @@
 .line.hidden {
     display: none;
 }
+
+/* Time Filter */
+#time-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--bg-highlight);
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    border: 1px solid var(--dim);
+}
+
+.time-filter-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.time-separator {
+    color: var(--dim);
+    font-size: 11px;
+}
+
+#start-time-filter,
+#end-time-filter {
+    background: var(--bg);
+    border: 1px solid var(--dim);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 11px;
+    padding: 0.25rem 0.5rem;
+    border-radius: 2px;
+    width: 120px;
+    outline: none;
+}
+
+#start-time-filter:focus,
+#end-time-filter:focus {
+    border-color: var(--text);
+}
+
+#apply-time-filter,
+#clear-time-filter {
+    background: var(--bg);
+    border: 1px solid var(--dim);
+    color: var(--dim);
+    font-size: 11px;
+    padding: 0.125rem 0.375rem;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+#apply-time-filter:hover,
+#clear-time-filter:hover {
+    color: var(--text);
+    border-color: var(--text);
+}
+
+.time-highlight {
+    background: rgba(var(--success-rgb), 0.1);
+}
+
+/* Active filter states */
+#time-filter.filter-active {
+    border-color: var(--success);
+    box-shadow: 0 0 0 1px var(--success);
+}
+
+#time-filter.filter-active .filter-label {
+    color: var(--success);
+}
+
+#time-filter.filter-active #apply-time-filter {
+    color: var(--success);
+    border-color: var(--success);
+}
