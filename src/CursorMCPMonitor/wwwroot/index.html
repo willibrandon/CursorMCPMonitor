@@ -9,10 +9,7 @@
     <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
-    <div id="search-container">
-        <input type="text" id="search-input" placeholder="Search logs... (/ to search, Esc to close)">
-        <span id="search-count"></span>
-    </div>
+    <!-- Command palette (stays outside the main layout) -->
     <div id="command-palette">
         <input type="text" id="command-input" placeholder="Type a command... (Esc to close)">
         <div id="command-list">
@@ -35,74 +32,103 @@
         </div>
     </div>
     
-    <div id="top-controls">
-        <div id="status-indicators">
-            <div class="status-item">
-                <span class="status-dot" id="ws-status"></span>
-                <span class="status-label">Connection</span>
+    <!-- Main application container -->
+    <div id="app-container">
+        <!-- Top header with status and filters -->
+        <header id="top-controls">
+            <!-- Status indicators row -->
+            <div class="controls-row">
+                <div id="status-indicators">
+                    <div class="status-item">
+                        <span class="status-dot" id="ws-status"></span>
+                        <span class="status-label">Connection</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-dot" id="client-count">0</span>
+                        <span class="status-label">Clients</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-dot" id="event-rate">0</span>
+                        <span class="status-label">evt/s</span>
+                    </div>
+                </div>
+                
+                <!-- Search is now integrated into the top controls -->
+                <div id="search-container">
+                    <input type="text" id="search-input" placeholder="Search logs... (/ to search, Esc to close)">
+                    <span id="search-count"></span>
+                </div>
             </div>
-            <div class="status-item">
-                <span class="status-dot" id="client-count">0</span>
-                <span class="status-label">Clients</span>
+            
+            <!-- Filters row -->
+            <div class="controls-row">
+                <!-- Event type filters -->
+                <div id="event-filters">
+                    <div class="filter-label">Filters:</div>
+                    <div class="filter-options">
+                        <label class="filter-option">
+                            <input type="checkbox" data-filter-type="create" checked>
+                            <span class="filter-type create">CREATE</span>
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" data-filter-type="list" checked>
+                            <span class="filter-type list">LIST</span>
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" data-filter-type="connect" checked>
+                            <span class="filter-type connect">CONNECT</span>
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" data-filter-type="error" checked>
+                            <span class="filter-type error">ERROR</span>
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" data-filter-type="warning" checked>
+                            <span class="filter-type warning">WARNING</span>
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" data-filter-type="close" checked>
+                            <span class="filter-type close">CLOSE</span>
+                        </label>
+                        <button id="filter-all">All</button>
+                        <button id="filter-none">None</button>
+                    </div>
+                </div>
             </div>
-            <div class="status-item">
-                <span class="status-dot" id="event-rate">0</span>
-                <span class="status-label">evt/s</span>
+            
+            <!-- Client ID and Time filters row -->
+            <div class="controls-row">
+                <!-- Client ID filter -->
+                <div id="client-filter">
+                    <div class="filter-label">Client ID:</div>
+                    <input type="text" id="client-id-filter" placeholder="Filter by client ID...">
+                    <div class="filter-controls">
+                        <button id="clear-client-filter">Clear</button>
+                    </div>
+                </div>
+                
+                <!-- Time range filter -->
+                <div id="time-filter">
+                    <div class="filter-label">Time Range:</div>
+                    <div class="time-filter-inputs">
+                        <input type="text" id="start-time-filter" class="time-input-field" placeholder="YYYY-MM-DD HH:MM:SS.SSS">
+                        <span class="time-separator">to</span>
+                        <input type="text" id="end-time-filter" class="time-input-field" placeholder="YYYY-MM-DD HH:MM:SS.SSS">
+                    </div>
+                    <div class="filter-controls">
+                        <button id="apply-time-filter">Apply</button>
+                        <button id="clear-time-filter">Clear</button>
+                    </div>
+                </div>
             </div>
-        </div>
+        </header>
         
-        <div id="event-filters">
-            <div class="filter-label">Filters:</div>
-            <div class="filter-options">
-                <label class="filter-option">
-                    <input type="checkbox" data-filter-type="create" checked>
-                    <span class="filter-type create">CREATE</span>
-                </label>
-                <label class="filter-option">
-                    <input type="checkbox" data-filter-type="list" checked>
-                    <span class="filter-type list">LIST</span>
-                </label>
-                <label class="filter-option">
-                    <input type="checkbox" data-filter-type="connect" checked>
-                    <span class="filter-type connect">CONNECT</span>
-                </label>
-                <label class="filter-option">
-                    <input type="checkbox" data-filter-type="error" checked>
-                    <span class="filter-type error">ERROR</span>
-                </label>
-                <label class="filter-option">
-                    <input type="checkbox" data-filter-type="warning" checked>
-                    <span class="filter-type warning">WARNING</span>
-                </label>
-                <label class="filter-option">
-                    <input type="checkbox" data-filter-type="close" checked>
-                    <span class="filter-type close">CLOSE</span>
-                </label>
-                <button id="filter-all">All</button>
-                <button id="filter-none">None</button>
-            </div>
-        </div>
+        <!-- Main content area -->
+        <main id="terminal"></main>
         
-        <div id="client-filter">
-            <div class="filter-label">Client ID:</div>
-            <input type="text" id="client-id-filter" placeholder="Filter by client ID...">
-            <button id="clear-client-filter">Clear</button>
-        </div>
-        
-        <div id="time-filter">
-            <div class="filter-label">Time Range:</div>
-            <div class="time-filter-inputs">
-                <input type="text" id="start-time-filter" class="time-input-field" placeholder="YYYY-MM-DD HH:MM:SS.SSS">
-                <span class="time-separator">to</span>
-                <input type="text" id="end-time-filter" class="time-input-field" placeholder="YYYY-MM-DD HH:MM:SS.SSS">
-            </div>
-            <button id="apply-time-filter">Apply</button>
-            <button id="clear-time-filter">Clear</button>
-        </div>
+        <!-- Theme indicator -->
+        <div id="theme-indicator">theme: dark</div>
     </div>
-    
-    <div id="terminal"></div>
-    <div id="theme-indicator">theme: dark</div>
 
     <script src="js/terminal.js"></script>
     <script src="js/websocket.js"></script>

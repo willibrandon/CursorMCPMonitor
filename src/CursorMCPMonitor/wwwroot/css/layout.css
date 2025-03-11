@@ -11,16 +11,18 @@ body {
     font-family: ui-monospace, 'SF Mono', 'Cascadia Code', 'Segoe UI Mono', 'Ubuntu Mono', Menlo, Consolas, monospace;
     font-size: 13px;
     line-height: 1.5;
-    padding: 1rem;
     height: 100vh;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 #terminal {
-    height: calc(100vh - 2rem);
+    flex: 1;
     overflow-y: auto;
     white-space: pre-wrap;
     word-break: break-word;
+    /* Removed fixed height to use flex instead */
 }
 
 /* Scrollbar styling */

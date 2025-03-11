@@ -3,19 +3,6 @@ const searchInput = document.getElementById('search-input');
 const searchCount = document.getElementById('search-count');
 let searchTimeout = null;
 
-// Show/hide search bar
-function toggleSearch(show) {
-    searchContainer.classList.toggle('visible', show);
-    terminal.classList.toggle('search-active', show);
-    if (show) {
-        searchInput.focus();
-        searchInput.select();
-    } else {
-        searchInput.value = '';
-        clearSearch();
-    }
-}
-
 // Clear search highlights
 function clearSearch() {
     const matches = terminal.getElementsByClassName('search-match');
@@ -28,7 +15,11 @@ function clearSearch() {
     // Show all lines when clearing search
     const lines = terminal.getElementsByClassName('line');
     for (const line of lines) {
-        line.style.display = '';
+        // Only show lines that aren't hidden by other filters
+        if (!line.classList.contains('hidden') && 
+            !line.classList.contains('time-filtered')) {
+            line.style.display = '';
+        }
     }
 }
 
@@ -96,7 +87,8 @@ searchInput.addEventListener('input', debouncedSearch);
 
 searchInput.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        toggleSearch(false);
+        searchInput.value = '';
+        clearSearch();
         e.preventDefault();
     }
 });
@@ -104,12 +96,12 @@ searchInput.addEventListener('keydown', (e) => {
 // Global keyboard shortcuts
 document.addEventListener('keydown', (e) => {
     // Use forward slash to trigger search
-    if (e.key === '/' && !searchContainer.classList.contains('visible')) {
-        toggleSearch(true);
+    if (e.key === '/' && document.activeElement !== searchInput) {
+        searchInput.focus();
+        searchInput.select();
         e.preventDefault();
     }
 });
 
 // Export for use in other modules
-window.toggleSearch = toggleSearch;
 window.applySearchFilter = performSearch; // Export for use in event filters 
