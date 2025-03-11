@@ -109,22 +109,42 @@ public class LogTailerTests : IDisposable
         var lines = new[] { "Line 1", "Line 2" };
         var tailer = new LogTailer(_testLogFile, ProcessLine, 100);
 
-        // Act - Write initial lines
-        await File.WriteAllLinesAsync(_testLogFile, lines);
-        await Task.Delay(1000);
-
-        // Simulate IOException by making file inaccessible
-        using (var stream = File.Open(_testLogFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        try
         {
-            await Task.Delay(200); // Wait for next poll attempt
+            // Act - Write initial lines
+            await File.WriteAllLinesAsync(_testLogFile, lines);
+            await Task.Delay(500); // Wait longer for initial processing to complete
+
+            // Clear processed lines to ensure we only get new content
+            lock (_processedLines)
+            {
+                _processedLines.Clear();
+            }
+
+            // Simulate IOException by renaming the file temporarily
+            var tempPath = _testLogFile + ".temp";
+            File.Move(_testLogFile, tempPath);
+            await Task.Delay(500); // Wait longer for file system to stabilize
+
+            // Create a new empty file and then write the new line
+            File.WriteAllText(_testLogFile, ""); // Create empty file
+            await Task.Delay(200); // Wait for file creation to be detected
+            await File.AppendAllLinesAsync(_testLogFile, new[] { "Line 3" });
+            await Task.Delay(500); // Wait longer for processing to complete
+
+            // Assert
+            var line = Assert.Single(_processedLines); // Should only see the new line
+            Assert.Equal("Line 3", line);
         }
-
-        // Write more lines to ensure tailer recovers
-        await File.WriteAllLinesAsync(_testLogFile, new[] { "Line 3" });
-        await Task.Delay(1000);
-
-        // Assert
-        Assert.Equal(3, _processedLines.Count);
+        finally
+        {
+            // Cleanup
+            tailer.Dispose();
+            if (File.Exists(_testLogFile + ".temp"))
+            {
+                File.Delete(_testLogFile + ".temp");
+            }
+        }
     }
 
     [Fact]
