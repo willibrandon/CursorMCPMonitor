@@ -53,20 +53,36 @@ public class WebSocketServiceIntegrationTests : IDisposable
 
     public void Dispose()
     {
+        // First, close all client connections
         foreach (var client in _clients)
         {
             try
             {
                 if (client.State == WebSocketState.Open)
                 {
-                    client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Test completed", CancellationToken.None)
+                    // Use a short timeout to avoid hanging
+                    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                    client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Test completed", cts.Token)
                         .Wait(TimeSpan.FromSeconds(1));
                 }
-                client.Dispose();
             }
             catch { }
+            finally
+            {
+                client.Dispose();
+            }
         }
-        _server.Dispose();
+
+        _clients.Clear();
+
+        // Then dispose the server
+        try
+        {
+            _server?.Dispose();
+        }
+        catch { }
+
+        GC.SuppressFinalize(this);
     }
 
     private async Task<WebSocket> ConnectWebSocketAsync()
