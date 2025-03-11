@@ -370,13 +370,21 @@
     font-size: 11px;
     padding: 0.25rem 0.5rem;
     border-radius: 2px;
-    width: 120px;
+    width: 200px;
     outline: none;
+    font-family: monospace;
+    /* Ensure these inputs can receive numpad input */
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    -webkit-app-region: no-drag !important;
+    -webkit-touch-callout: default !important;
+    -webkit-user-modify: read-write !important;
 }
 
-#start-time-filter:focus,
-#end-time-filter:focus {
-    border-color: var(--text);
+/* Ensure input focus gets priority */
+.time-input-field:focus {
+    z-index: 1000;
+    position: relative;
 }
 
 #apply-time-filter,
@@ -413,4 +421,22 @@
 #time-filter.filter-active #apply-time-filter {
     color: var(--success);
     border-color: var(--success);
+}
+
+/* Time filter keyboard shortcut info */
+#time-filter::after {
+    content: "Alt+1-7: Quick ranges | Alt+n: Now | Alt+t: Today start | Alt+e: Today end | Alt+a: Apply";
+    display: block;
+    position: absolute;
+    bottom: -20px;
+    left: 0;
+    font-size: 9px;
+    color: var(--dim);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+#time-filter:hover::after {
+    opacity: 1;
 }
