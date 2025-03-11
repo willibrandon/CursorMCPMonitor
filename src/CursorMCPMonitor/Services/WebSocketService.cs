@@ -1,29 +1,29 @@
+using CursorMCPMonitor.Interfaces;
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
-using CursorMCPMonitor.Interfaces;
 
 namespace CursorMCPMonitor.Services;
 
 /// <summary>
-/// Service for managing WebSocket connections and broadcasting messages to connected clients.
+/// Implementation of the WebSocket service that manages client connections and message broadcasting.
 /// </summary>
-public class WebSocketService : IWebSocketService
+/// <remarks>
+/// This implementation uses a <see cref="ConcurrentDictionary{TKey,TValue}"/> to track active connections
+/// and provides thread-safe operations for managing client connections and message broadcasting.
+/// </remarks>
+/// <remarks>
+/// Initializes a new instance of the <see cref="WebSocketService"/> class.
+/// </remarks>
+/// <param name="logger">The logger instance for recording service operations.</param>
+public class WebSocketService(ILogger<WebSocketService> logger) : IWebSocketService
 {
     private readonly ConcurrentDictionary<string, WebSocket> _clients = new();
-    private readonly ILogger<WebSocketService> _logger;
+    private readonly ILogger<WebSocketService> _logger = logger;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
-    public WebSocketService(ILogger<WebSocketService> logger)
-    {
-        _logger = logger;
-    }
-
-    /// <summary>
-    /// Adds a new WebSocket client connection.
-    /// </summary>
+    /// <inheritdoc />
     public async Task HandleClientAsync(WebSocket webSocket)
     {
         var clientId = Guid.NewGuid().ToString();
@@ -65,9 +65,7 @@ public class WebSocketService : IWebSocketService
         }
     }
 
-    /// <summary>
-    /// Broadcasts a message to all connected WebSocket clients.
-    /// </summary>
+    /// <inheritdoc />
     public async Task BroadcastAsync<T>(T message)
     {
         var json = JsonSerializer.Serialize(message);
@@ -107,6 +105,18 @@ public class WebSocketService : IWebSocketService
         }
     }
 
+    /// <summary>
+    /// Disposes of the WebSocket service, closing all client connections and releasing resources.
+    /// </summary>
+    /// <remarks>
+    /// This implementation:
+    /// <list type="bullet">
+    /// <item><description>Cancels any pending operations</description></item>
+    /// <item><description>Gracefully closes all open client connections</description></item>
+    /// <item><description>Cleans up the client collection</description></item>
+    /// <item><description>Disposes of the cancellation token source</description></item>
+    /// </list>
+    /// </remarks>
     public void Dispose()
     {
         try
@@ -135,11 +145,14 @@ public class WebSocketService : IWebSocketService
                     client.Dispose();
                 }
             }
+
             _clients.Clear();
         }
         finally
         {
             _cancellationTokenSource.Dispose();
         }
+
+        GC.SuppressFinalize(this);
     }
-} 
+}

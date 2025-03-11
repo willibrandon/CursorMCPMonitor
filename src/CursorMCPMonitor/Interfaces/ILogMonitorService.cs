@@ -18,4 +18,4 @@ public interface ILogMonitorService
     /// Stops all active watchers and tailers.
     /// </summary>
     void Dispose();
-} 
+}

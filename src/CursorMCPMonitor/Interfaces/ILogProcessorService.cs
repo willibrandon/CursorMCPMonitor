@@ -23,4 +23,4 @@ public interface ILogProcessorService
     /// </summary>
     /// <param name="level">Minimum log level to display (Debug, Info, Warning, Error)</param>
     void SetVerbosityLevel(string level);
-} 
+}

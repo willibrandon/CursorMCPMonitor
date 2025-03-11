@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Configuration;
-
 namespace CursorMCPMonitor.Configuration;
 
 /// <summary>
@@ -68,4 +66,4 @@ public class AppConfig
         
         return config;
     }
-} 
+}

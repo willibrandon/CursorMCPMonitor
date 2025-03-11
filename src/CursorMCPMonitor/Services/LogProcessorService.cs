@@ -1,6 +1,5 @@
-using System.Text.RegularExpressions;
 using CursorMCPMonitor.Interfaces;
-using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
 
 namespace CursorMCPMonitor.Services;
 
@@ -255,4 +254,4 @@ public partial class LogProcessorService : ILogProcessorService
 
         _webSocketService.BroadcastAsync(logEvent).ConfigureAwait(false);
     }
-} 
+}

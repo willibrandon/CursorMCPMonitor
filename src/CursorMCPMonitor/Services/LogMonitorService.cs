@@ -1,6 +1,5 @@
 using CursorMCPMonitor.Configuration;
 using CursorMCPMonitor.Interfaces;
-using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 
 namespace CursorMCPMonitor.Services;
@@ -224,4 +223,4 @@ public class LogMonitorService : ILogMonitorService
         
         _logger.LogInformation("All watchers and tailers stopped");
     }
-} 
+}

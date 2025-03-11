@@ -46,4 +46,4 @@ public interface IConsoleOutputService
     /// <param name="prefix">The prefix to display before the message</param>
     /// <param name="message">The message to display</param>
     void WriteHighlight(string prefix, string message);
-} 
+}

@@ -68,4 +68,4 @@ public class CommandLineOptions
         rootCommand.Invoke(args);
         return options;
     }
-} 
+}

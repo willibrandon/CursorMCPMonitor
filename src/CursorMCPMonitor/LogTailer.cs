@@ -208,4 +208,4 @@ public class LogTailer : IDisposable
         Stop();
         GC.SuppressFinalize(this);
     }
-} 
+}

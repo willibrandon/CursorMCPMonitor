@@ -1,6 +1,5 @@
-using System.Text;
 using CursorMCPMonitor.Interfaces;
-using Microsoft.Extensions.Logging;
+using System.Text;
 
 namespace CursorMCPMonitor.Services;
 
@@ -124,4 +123,4 @@ public class ConsoleOutputService : IConsoleOutputService
         // Log with structured properties
         _logger.LogInformation("{OutputType} {Prefix} {Message}", "Highlight", prefix, message);
     }
-} 
+}

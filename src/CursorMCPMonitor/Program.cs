@@ -1,21 +1,9 @@
 ﻿using CursorMCPMonitor.Configuration;
 using CursorMCPMonitor.Interfaces;
 using CursorMCPMonitor.Services;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Events;
-using System;
-using System.IO;
-using System.Text;
 using System.Reflection;
-using System.CommandLine;
-using System.CommandLine.Help;
-using System.CommandLine.IO;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+using System.Text;
 
 namespace CursorMCPMonitor;
 
