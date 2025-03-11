@@ -6,7 +6,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <EnableDefaultContentItems>false</EnableDefaultContentItems>
+	<Deterministic>true</Deterministic>
+	<EnableDefaultContentItems>false</EnableDefaultContentItems>
     
     <!-- Tool configuration -->
     <PackAsTool>true</PackAsTool>
