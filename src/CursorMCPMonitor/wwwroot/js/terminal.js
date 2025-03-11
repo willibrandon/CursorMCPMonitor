@@ -67,9 +67,14 @@ function addLine(data) {
     
     terminal.insertBefore(line, terminal.firstChild);
 
-    // Apply current filters if available
+    // Apply type filters
     if (window.shouldShowLine && typeClass && !window.shouldShowLine(typeClass)) {
         line.classList.add('hidden');
+    }
+    
+    // Apply client ID filter if active
+    if (window.checkClientMatch && !window.checkClientMatch(line)) {
+        line.style.display = 'none';
     }
     
     // If there's an active search, apply it to the new line

@@ -34,9 +34,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // Also apply search filter if active
-        if (window.applySearchFilter) {
-            window.applySearchFilter();
+        // Update visibility considering client filter as well
+        if (window.updateVisibility) {
+            window.updateVisibility();
+        } else {
+            // Also apply search filter if active (fallback if client filter not loaded)
+            if (window.applySearchFilter) {
+                window.applySearchFilter();
+            }
         }
     }
     

@@ -221,6 +221,52 @@
     border: 1px solid var(--dim);
 }
 
+/* Client ID Filter */
+#client-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--bg-highlight);
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    border: 1px solid var(--dim);
+}
+
+#client-id-filter {
+    background: var(--bg);
+    border: 1px solid var(--dim);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 11px;
+    padding: 0.25rem 0.5rem;
+    border-radius: 2px;
+    width: 150px;
+    outline: none;
+}
+
+#client-id-filter:focus {
+    border-color: var(--text);
+}
+
+#client-id-filter::placeholder {
+    color: var(--dim);
+}
+
+#clear-client-filter {
+    background: var(--bg);
+    border: 1px solid var(--dim);
+    color: var(--dim);
+    font-size: 11px;
+    padding: 0.125rem 0.375rem;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+#clear-client-filter:hover {
+    color: var(--text);
+    border-color: var(--text);
+}
+
 .filter-label {
     color: var(--dim);
     font-size: 12px;

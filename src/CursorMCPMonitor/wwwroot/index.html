@@ -82,6 +82,12 @@
                 <button id="filter-none">None</button>
             </div>
         </div>
+        
+        <div id="client-filter">
+            <div class="filter-label">Client ID:</div>
+            <input type="text" id="client-id-filter" placeholder="Filter by client ID...">
+            <button id="clear-client-filter">Clear</button>
+        </div>
     </div>
     
     <div id="terminal"></div>
@@ -93,6 +99,7 @@
     <script src="js/search.js"></script>
     <script src="js/command-palette.js"></script>
     <script src="js/event-filters.js"></script>
+    <script src="js/client-filter.js"></script>
     <script>
         // Initialize WebSocket connection
         window.wsConnect();
