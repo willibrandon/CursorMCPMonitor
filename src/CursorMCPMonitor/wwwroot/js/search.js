@@ -65,6 +65,9 @@ function performSearch() {
     let matchedLines = 0;
     
     for (const line of lines) {
+        // Skip lines that are already hidden by filters
+        if (line.classList.contains('hidden')) continue;
+        
         const matches = highlightMatches(line, searchText);
         if (matches > 0) {
             totalMatches += matches;
@@ -108,4 +111,5 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Export for use in other modules
-window.toggleSearch = toggleSearch; 
+window.toggleSearch = toggleSearch;
+window.applySearchFilter = performSearch; // Export for use in event filters 

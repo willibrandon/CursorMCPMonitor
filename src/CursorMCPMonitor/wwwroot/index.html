@@ -34,20 +34,56 @@
             </div>
         </div>
     </div>
-    <div id="status-indicators">
-        <div class="status-item">
-            <span class="status-dot" id="ws-status"></span>
-            <span class="status-label">Connection</span>
+    
+    <div id="top-controls">
+        <div id="status-indicators">
+            <div class="status-item">
+                <span class="status-dot" id="ws-status"></span>
+                <span class="status-label">Connection</span>
+            </div>
+            <div class="status-item">
+                <span class="status-dot" id="client-count">0</span>
+                <span class="status-label">Clients</span>
+            </div>
+            <div class="status-item">
+                <span class="status-dot" id="event-rate">0</span>
+                <span class="status-label">evt/s</span>
+            </div>
         </div>
-        <div class="status-item">
-            <span class="status-dot" id="client-count">0</span>
-            <span class="status-label">Clients</span>
-        </div>
-        <div class="status-item">
-            <span class="status-dot" id="event-rate">0</span>
-            <span class="status-label">evt/s</span>
+        
+        <div id="event-filters">
+            <div class="filter-label">Filters:</div>
+            <div class="filter-options">
+                <label class="filter-option">
+                    <input type="checkbox" data-filter-type="create" checked>
+                    <span class="filter-type create">CREATE</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" data-filter-type="list" checked>
+                    <span class="filter-type list">LIST</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" data-filter-type="connect" checked>
+                    <span class="filter-type connect">CONNECT</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" data-filter-type="error" checked>
+                    <span class="filter-type error">ERROR</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" data-filter-type="warning" checked>
+                    <span class="filter-type warning">WARNING</span>
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" data-filter-type="close" checked>
+                    <span class="filter-type close">CLOSE</span>
+                </label>
+                <button id="filter-all">All</button>
+                <button id="filter-none">None</button>
+            </div>
         </div>
     </div>
+    
     <div id="terminal"></div>
     <div id="theme-indicator">theme: dark</div>
 
@@ -56,9 +92,10 @@
     <script src="js/theme.js"></script>
     <script src="js/search.js"></script>
     <script src="js/command-palette.js"></script>
+    <script src="js/event-filters.js"></script>
     <script>
         // Initialize WebSocket connection
         window.wsConnect();
     </script>
 </body>
-</html> 
+</html>

@@ -40,7 +40,7 @@
 /* Search bar */
 #search-container {
     position: fixed;
-    top: 0;
+    top: 3.5rem;
     left: 50%;
     transform: translateX(-50%);
     display: none;
@@ -48,17 +48,16 @@
     gap: 0.5rem;
     background: var(--bg-highlight);
     border: 1px solid var(--dim);
-    border-radius: 0 0 4px 4px;
+    border-radius: 4px;
     padding: 0.5rem;
     z-index: 1000;
     width: fit-content;
-    transition: transform 0.2s ease;
-    transform: translate(-50%, -100%);
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 #search-container.visible {
     display: flex;
-    transform: translate(-50%, 0);
 }
 
 #search-input {
@@ -90,17 +89,25 @@
 
 /* Add padding to terminal when search is visible */
 #terminal.search-active {
-    padding-top: 2rem;
+    padding-top: 5rem;
+}
+
+/* Status indicators and event filters container */
+#top-controls {
+    position: fixed;
+    top: 0.75rem;
+    left: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    z-index: 950;
 }
 
 /* Status indicators */
 #status-indicators {
-    position: fixed;
-    top: 0.75rem;
-    left: 1rem;
     display: flex;
     gap: 1rem;
-    z-index: 900;
 }
 
 .status-item {
@@ -137,7 +144,7 @@
 }
 
 #terminal {
-    padding-top: 2rem;
+    padding-top: 3.5rem;
 }
 
 /* Command Palette */
@@ -201,4 +208,87 @@
     background: var(--bg-highlight);
     border-radius: 2px;
     border: 1px solid var(--dim);
-} 
+}
+
+/* Event Filters */
+#event-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--bg-highlight);
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    border: 1px solid var(--dim);
+}
+
+.filter-label {
+    color: var(--dim);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.filter-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+}
+
+.filter-option input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--bg);
+    border: 1px solid var(--dim);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+}
+
+.filter-option input[type="checkbox"]:checked {
+    background: var(--bg-highlight);
+}
+
+.filter-option input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: -1px;
+    left: 2px;
+    font-size: 11px;
+    color: var(--text);
+}
+
+.filter-type {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 0.125rem 0.25rem;
+    border-radius: 2px;
+}
+
+#filter-all, #filter-none {
+    background: var(--bg);
+    border: 1px solid var(--dim);
+    color: var(--dim);
+    font-size: 11px;
+    padding: 0.125rem 0.375rem;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+#filter-all:hover, #filter-none:hover {
+    color: var(--text);
+    border-color: var(--text);
+}
+
+/* Hidden line class for filtered items */
+.line.hidden {
+    display: none;
+}

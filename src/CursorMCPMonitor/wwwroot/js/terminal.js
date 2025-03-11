@@ -10,6 +10,8 @@ function addLine(data) {
     const line = document.createElement('div');
     line.className = 'line';
     
+    let typeClass = '';
+    
     if (typeof data === 'string') {
         line.innerHTML = `<span class="timestamp">${formatTime(now)}</span><span class="message">${data}</span>`;
     } else {
@@ -18,7 +20,7 @@ function addLine(data) {
         const message = data.Message || '';
         
         let displayType = type;
-        let typeClass = type.toLowerCase();
+        typeClass = type.toLowerCase();
         
         switch(type) {
             case 'CreateClient':
@@ -65,6 +67,11 @@ function addLine(data) {
     
     terminal.insertBefore(line, terminal.firstChild);
 
+    // Apply current filters if available
+    if (window.shouldShowLine && typeClass && !window.shouldShowLine(typeClass)) {
+        line.classList.add('hidden');
+    }
+    
     // If there's an active search, apply it to the new line
     const searchInput = document.getElementById('search-input');
     if (searchInput && searchInput.value.trim()) {
@@ -77,4 +84,4 @@ function addLine(data) {
 }
 
 // Export for use in other modules
-window.addLine = addLine; 
+window.addLine = addLine;
