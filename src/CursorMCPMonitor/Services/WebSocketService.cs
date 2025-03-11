@@ -17,11 +17,19 @@ namespace CursorMCPMonitor.Services;
 /// Initializes a new instance of the <see cref="WebSocketService"/> class.
 /// </remarks>
 /// <param name="logger">The logger instance for recording service operations.</param>
-public class WebSocketService(ILogger<WebSocketService> logger) : IWebSocketService
+public class WebSocketService : IWebSocketService
 {
     private readonly ConcurrentDictionary<string, WebSocket> _clients = new();
-    private readonly ILogger<WebSocketService> _logger = logger;
+    private readonly ILogger<WebSocketService> _logger;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = false };
+    private readonly List<string> _deadSockets = new(4); // Pre-allocate with small capacity
+    private ArraySegment<byte> _messageSegment; // Reuse the same segment
+
+    public WebSocketService(ILogger<WebSocketService> logger)
+    {
+        _logger = logger;
+    }
 
     /// <inheritdoc />
     public async Task HandleClientAsync(WebSocket webSocket)
@@ -68,11 +76,10 @@ public class WebSocketService(ILogger<WebSocketService> logger) : IWebSocketServ
     /// <inheritdoc />
     public async Task BroadcastAsync<T>(T message)
     {
-        var json = JsonSerializer.Serialize(message);
-        var bytes = Encoding.UTF8.GetBytes(json);
-        var arraySegment = new ArraySegment<byte>(bytes);
-
-        var deadSockets = new List<string>();
+        // Serialize once for all clients
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(message, _jsonOptions);
+        _messageSegment = new ArraySegment<byte>(bytes);
+        _deadSockets.Clear();
 
         foreach (var client in _clients)
         {
@@ -81,27 +88,29 @@ public class WebSocketService(ILogger<WebSocketService> logger) : IWebSocketServ
                 if (client.Value.State == WebSocketState.Open)
                 {
                     await client.Value.SendAsync(
-                        arraySegment,
+                        _messageSegment,
                         WebSocketMessageType.Text,
                         true,
                         _cancellationTokenSource.Token);
                 }
                 else
                 {
-                    deadSockets.Add(client.Key);
+                    _deadSockets.Add(client.Key);
                 }
             }
             catch (WebSocketException)
             {
-                deadSockets.Add(client.Key);
+                _deadSockets.Add(client.Key);
             }
         }
 
         // Cleanup any dead connections
-        foreach (var id in deadSockets)
+        foreach (var id in _deadSockets)
         {
-            _clients.TryRemove(id, out _);
-            _logger.LogInformation("Removed dead WebSocket client: {ClientId}", id);
+            if (_clients.TryRemove(id, out _))
+            {
+                _logger.LogInformation("Removed dead WebSocket client: {ClientId}", id);
+            }
         }
     }
 
