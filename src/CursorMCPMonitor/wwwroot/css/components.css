@@ -251,6 +251,7 @@
 
 /* Filter buttons */
 #clear-client-filter,
+#apply-client-filter,
 #apply-time-filter,
 #clear-time-filter,
 #filter-all, 
@@ -266,6 +267,7 @@
 }
 
 #clear-client-filter:hover,
+#apply-client-filter:hover,
 #apply-time-filter:hover,
 #clear-time-filter:hover,
 #filter-all:hover, 
@@ -529,4 +531,19 @@
     .timestamp, .client-id, .type {
         min-width: 100%;
     }
+}
+
+/* Client filter active state */
+#client-filter.filter-active {
+    border-color: var(--success);
+    box-shadow: 0 0 0 1px var(--success);
+}
+
+#client-filter.filter-active .filter-label {
+    color: var(--success);
+}
+
+#client-filter.filter-active #apply-client-filter {
+    color: var(--success);
+    border-color: var(--success);
 }

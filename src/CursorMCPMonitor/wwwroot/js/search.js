@@ -12,12 +12,15 @@ function clearSearch() {
     }
     searchCount.textContent = '';
 
-    // Show all lines when clearing search
+    // Show all lines when clearing search (if not hidden by other filters)
     const lines = terminal.getElementsByClassName('line');
     for (const line of lines) {
-        // Only show lines that aren't hidden by other filters
-        if (!line.classList.contains('hidden') && 
-            !line.classList.contains('time-filtered')) {
+        line.classList.remove('hidden-by-search');
+        
+        // Show line unless hidden by other filters
+        if (!line.classList.contains('hidden-by-type') && 
+            !line.classList.contains('hidden-by-client') &&
+            !line.classList.contains('hidden-by-time')) {
             line.style.display = '';
         }
     }
@@ -46,6 +49,7 @@ function escapeRegExp(string) {
 
 // Perform search
 function performSearch() {
+    console.log('[SEARCH] Performing search');
     const searchText = searchInput.value.trim();
     clearSearch();
     
@@ -56,15 +60,21 @@ function performSearch() {
     let matchedLines = 0;
     
     for (const line of lines) {
-        // Skip lines that are already hidden by filters
-        if (line.classList.contains('hidden')) continue;
+        // Skip checking lines already hidden by other filters
+        if (line.classList.contains('hidden-by-type') || 
+            line.classList.contains('hidden-by-client') ||
+            line.classList.contains('hidden-by-time')) {
+            continue;
+        }
         
         const matches = highlightMatches(line, searchText);
         if (matches > 0) {
             totalMatches += matches;
             matchedLines++;
+            line.classList.remove('hidden-by-search');
             line.style.display = '';
         } else {
+            line.classList.add('hidden-by-search');
             line.style.display = 'none';
         }
     }
@@ -105,4 +115,4 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Export for use in other modules
-window.applySearchFilter = performSearch; // Export for use in event filters 
+window.applySearchFilter = performSearch; 

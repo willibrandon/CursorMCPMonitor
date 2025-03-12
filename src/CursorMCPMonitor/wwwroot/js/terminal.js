@@ -50,38 +50,40 @@ function parseTimestampString(timestampStr) {
 // Central function to manage visibility based on all active filters
 function updateVisibility() {
     const lines = document.querySelectorAll('#terminal .line');
+    console.log('Running updateVisibility on', lines.length, 'lines');
     
     lines.forEach(line => {
-        // Reset display to visible first
-        line.style.display = '';
+        // Reset display to default first
+        let shouldHide = false;
         
-        // Check event type filter
+        // Check event type filter first
         if (line.classList.contains('hidden')) {
-            line.style.display = 'none';
-            return;
+            shouldHide = true;
         }
         
         // Check time filter
-        if (line.classList.contains('time-filtered')) {
-            line.style.display = 'none';
-            return;
+        if (!shouldHide && line.classList.contains('time-filtered')) {
+            shouldHide = true;
         }
         
-        // Check client ID filter
-        if (window.checkClientMatch && !window.checkClientMatch(line)) {
-            line.style.display = 'none';
-            return;
+        // Check client ID filter - either no filter or must match
+        if (!shouldHide && line.getAttribute('data-client-match') === 'false') {
+            shouldHide = true;
         }
         
         // Check search filter
-        const searchInput = document.getElementById('search-input');
-        if (searchInput && searchInput.value.trim()) {
-            const hasMatches = line.querySelector('.search-match');
-            if (!hasMatches) {
-                line.style.display = 'none';
-                return;
+        if (!shouldHide) {
+            const searchInput = document.getElementById('search-input');
+            if (searchInput && searchInput.value.trim()) {
+                const hasMatches = line.querySelector('.search-match');
+                if (!hasMatches) {
+                    shouldHide = true;
+                }
             }
         }
+        
+        // Apply final visibility
+        line.style.display = shouldHide ? 'none' : '';
     });
 }
 
@@ -206,6 +208,15 @@ function addLine(data) {
             <span class="type ${typeClass}">${displayType}</span>
             <span class="message">${message}</span>
         `;
+        
+        // Apply client ID filter immediately to the new line
+        const activeFilter = document.getElementById('client-id-filter')?.value.trim() || '';
+        if (activeFilter !== '') {
+            const isMatch = clientId === activeFilter;
+            line.setAttribute('data-client-match', isMatch ? 'true' : 'false');
+        } else {
+            line.setAttribute('data-client-match', 'true');
+        }
     }
     
     // Insert the line into the terminal in chronological order

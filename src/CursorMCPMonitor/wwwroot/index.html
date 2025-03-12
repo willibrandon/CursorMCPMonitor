@@ -7,6 +7,97 @@
     <link rel="stylesheet" href="css/themes.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
+    <script>
+        // EMERGENCY INLINE CLIENT FILTER FUNCTIONS
+        let activeClientFilter = '';
+        let isClientFilterActive = false;
+        
+        function forceApplyClientFilter(value) {
+            console.log("[INLINE FILTER] Filtering for:", value);
+            const filterValue = value.trim();
+            activeClientFilter = filterValue;
+            isClientFilterActive = filterValue !== '';
+            
+            if (filterValue) {
+                document.getElementById('client-filter').classList.add('filter-active');
+            } else {
+                document.getElementById('client-filter').classList.remove('filter-active');
+            }
+            
+            // Apply combined filtering
+            applyAllFilters();
+        }
+        
+        function clearClientFilter() {
+            console.log("[INLINE FILTER] Clearing filter");
+            const filterInput = document.getElementById('client-id-filter');
+            if (filterInput) filterInput.value = '';
+            activeClientFilter = '';
+            isClientFilterActive = false;
+            document.getElementById('client-filter').classList.remove('filter-active');
+            
+            // Apply combined filtering
+            applyAllFilters();
+        }
+        
+        // Combined filter function to apply both client ID and time filters
+        function applyAllFilters() {
+            const allLines = document.querySelectorAll('#terminal .line');
+            let matchCount = 0;
+            
+            allLines.forEach(line => {
+                let shouldShow = true;
+                
+                // Check client ID filter if active
+                if (isClientFilterActive) {
+                    const clientIdEl = line.querySelector('.client-id');
+                    if (clientIdEl) {
+                        const clientId = clientIdEl.textContent.trim();
+                        shouldShow = clientId === activeClientFilter;
+                    }
+                }
+                
+                // Check time filter if active
+                if (shouldShow && document.getElementById('time-filter').classList.contains('filter-active')) {
+                    if (line.classList.contains('time-filtered')) {
+                        shouldShow = false;
+                    }
+                }
+                
+                // Apply visibility
+                line.style.display = shouldShow ? '' : 'none';
+                
+                if (shouldShow) matchCount++;
+            });
+            
+            console.log(`[COMBINED FILTER] Showing ${matchCount} of ${allLines.length} lines`);
+        }
+        
+        // Hook into the time filter buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add listener for time filter apply button
+            const applyTimeBtn = document.getElementById('apply-time-filter');
+            if (applyTimeBtn) {
+                const originalClick = applyTimeBtn.onclick;
+                applyTimeBtn.onclick = function(e) {
+                    if (originalClick) originalClick.call(this, e);
+                    // After time filter is applied, reapply client filter
+                    setTimeout(applyAllFilters, 100);
+                };
+            }
+            
+            // Add listener for time filter clear button
+            const clearTimeBtn = document.getElementById('clear-time-filter');
+            if (clearTimeBtn) {
+                const originalClick = clearTimeBtn.onclick;
+                clearTimeBtn.onclick = function(e) {
+                    if (originalClick) originalClick.call(this, e);
+                    // After time filter is cleared, reapply client filter
+                    setTimeout(applyAllFilters, 100);
+                };
+            }
+        });
+    </script>
 </head>
 <body>
     <!-- Command palette (stays outside the main layout) -->
@@ -103,7 +194,8 @@
                     <div class="filter-label">Client ID:</div>
                     <input type="text" id="client-id-filter" placeholder="Filter by client ID...">
                     <div class="filter-controls">
-                        <button id="clear-client-filter">Clear</button>
+                        <button id="apply-client-filter" onclick="forceApplyClientFilter(document.getElementById('client-id-filter').value)">Apply</button>
+                        <button id="clear-client-filter" onclick="clearClientFilter()">Clear</button>
                     </div>
                 </div>
                 

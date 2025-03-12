@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Apply filters to all existing lines
     function applyFilters() {
+        console.log('[EVENT FILTER] Applying event type filters');
         const lines = document.querySelectorAll('#terminal .line');
         
         lines.forEach(line => {
@@ -28,20 +29,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 .find(cls => cls !== 'type');
             
             if (typeClass && !activeFilters[typeClass]) {
-                line.classList.add('hidden');
+                line.classList.add('hidden-by-type');
+                line.style.display = 'none';
             } else {
-                line.classList.remove('hidden');
+                line.classList.remove('hidden-by-type');
+                // Only show the line if it's not hidden by other filters
+                if (!line.classList.contains('hidden-by-search') && 
+                    !line.classList.contains('hidden-by-client') &&
+                    !line.classList.contains('hidden-by-time')) {
+                    line.style.display = '';
+                }
             }
         });
         
-        // Update visibility considering client filter as well
-        if (window.updateVisibility) {
-            window.updateVisibility();
-        } else {
-            // Also apply search filter if active (fallback if client filter not loaded)
-            if (window.applySearchFilter) {
-                window.applySearchFilter();
+        // Re-apply client filter if active
+        if (document.getElementById('client-id-filter').value.trim() !== '') {
+            // Trigger the client filter if it exists
+            if (typeof filterClientId === 'function') {
+                filterClientId();
             }
+        }
+        
+        // Re-apply search filter if active
+        if (window.applySearchFilter) {
+            window.applySearchFilter();
         }
     }
     
@@ -79,4 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.shouldShowLine = (typeClass) => {
         return activeFilters[typeClass] || false;
     };
+    
+    // Expose the applyFilters function to be used by other modules
+    window.applyEventFilters = applyFilters;
 });

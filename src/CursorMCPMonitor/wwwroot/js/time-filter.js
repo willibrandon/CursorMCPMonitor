@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Apply the time filter
     applyTimeFilter.addEventListener('click', () => {
-        console.log('Applying time filter');
+        console.log('[TIME FILTER] Applying time filter');
         
         // Get the user input values or use placeholders if empty
         let startValue = startTimeFilter.value.trim();
@@ -513,7 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Filter the log entries
         const lines = document.querySelectorAll('#terminal .line');
-        console.log(`Filtering ${lines.length} log entries between ${startValue} and ${endValue}`);
+        console.log(`[TIME FILTER] Filtering ${lines.length} log entries between ${startValue} and ${endValue}`);
         
         let visibleCount = 0;
         lines.forEach(line => {
@@ -528,29 +528,28 @@ document.addEventListener('DOMContentLoaded', () => {
             const isInRange = (entryDate >= startDate && entryDate <= endDate);
             
             if (isInRange) {
-                line.classList.add('time-matched');
                 line.classList.remove('time-filtered');
                 visibleCount++;
             } else {
-                line.classList.remove('time-matched');
                 line.classList.add('time-filtered');
+                // Note: We don't update display here anymore to allow combined filtering
             }
         });
         
-        console.log(`Time filter applied: ${visibleCount} entries visible`);
+        console.log(`[TIME FILTER] Time filter applied: ${visibleCount} entries in range`);
         
         // Apply visual indicator for active filter
         timeFilterContainer.classList.add('filter-active');
         
-        // Update overall visibility
-        if (window.updateVisibility) {
-            window.updateVisibility();
+        // Apply combined filtering if the combined filter function exists
+        if (typeof applyAllFilters === 'function') {
+            setTimeout(applyAllFilters, 50);
         }
     });
     
     // Clear the time filter
     clearTimeFilter.addEventListener('click', () => {
-        console.log('Clearing time filter');
+        console.log('[TIME FILTER] Clearing time filter');
         
         // Reset to default time range (last 24 hours)
         const now = new Date();
@@ -562,16 +561,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Remove filtered class from all lines
         const lines = document.querySelectorAll('#terminal .line');
         lines.forEach(line => {
-            line.classList.remove('time-matched');
             line.classList.remove('time-filtered');
         });
         
         // Remove active filter indicator
         timeFilterContainer.classList.remove('filter-active');
         
-        // Update overall visibility
-        if (window.updateVisibility) {
-            window.updateVisibility();
+        // Apply combined filtering if the combined filter function exists
+        if (typeof applyAllFilters === 'function') {
+            setTimeout(applyAllFilters, 50);
         }
     });
     
@@ -603,6 +601,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (!startDate || !endDate) return true;
         
-        return (entryDate >= startDate && entryDate <= endDate);
+        const isInRange = (entryDate >= startDate && entryDate <= endDate);
+        if (!isInRange) {
+            line.classList.add('time-filtered');
+        }
+        
+        return isInRange;
     };
 });
